@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configure xmlns="http://namespaces.zope.org/zope"
+  xmlns:browser="http://namespaces.zope.org/browser"
+  xmlns:five="http://namespaces.zope.org/five"
+  i18n_domain="groupserver">
+  
+  <browser:page 
+    for="Products.XWFChat.interfaces.IGSGroupFolder"
+    name="email_settings.html"
+    class=".emailsettings.GroupEmailSettingsForm"
+    permission="zope2.View"/>
+    
+  <utility
+      provides="zope.schema.interfaces.IVocabularyFactory"
+      component="gs.group.member.email.emailsettings.DefaultOrSpecificEmailVocab"
+      name="DefaultOrSpecificEmailVocab"
+      />
+
+  <browser:resource name="emailsettings_interlock-2010102801.js"
+    file="browser/javascript/emailsettings_interlock.js"
+    permission="zope.Public" />
+
+</configure>

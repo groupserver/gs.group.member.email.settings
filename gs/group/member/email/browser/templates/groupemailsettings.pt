@@ -1,0 +1,81 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:tal="http://xml.zope.org/namespaces/tal"
+  xmlns:metal="http://xml.zope.org/namespaces/metal"
+  metal:use-macro="context/@@groupserver_layout/page">
+  <head>
+    <title metal:fill-slot="title">
+      <span tal:replace="string:${view/label}: ${view/groupInfo/name}: ${view/siteInfo/get_name}">
+        Edit Image
+      </span>
+    </title>
+    <tal:block metal:fill-slot="style">
+        <style type="text/css">
+            #widget-form\.default_or_specific {
+                margin-bottom: 0.695em;
+            }
+            #widget-form\.destination {
+                margin-top: 0;
+                margin-left: 1.39em;
+            }
+            #widget-form\.destination label {
+                display: none;
+            }
+            .checkboxLabel {
+                display: inline !important;
+            }
+        </style>
+    </tal:block>
+  </head>
+  <body>
+    <div metal:fill-slot="messages" tal:condition="view/status" 
+      class="message-error"
+      tal:define="e view/errors"
+      tal:attributes="class python:e and 'message-error' or 'message-result'">
+      <p class="form-status" tal:content="structure view/status"/>
+      <dl tal:condition="view/errors">
+        <tal:block repeat="widget view/widgets">
+          <tal:block tal:condition="widget/error">
+            <dt tal:content="widget/label">Widget Name</dt>
+            <dd class="error" 
+              tal:content="structure widget/error">Error message</dd>
+          </tal:block>
+        </tal:block>
+      </dl>
+    </div>
+    <tal:block metal:fill-slot="body">
+      <form enctype="multipart/form-data"  method="post" action="."
+        tal:attributes="action request/URL" id="join">
+        <p id="introduction" tal:condition="view/is_editing_self">
+          This page is used to change how you are notified of messages that are posted to THE GROUP NAME, and which email address that used to notify you of messages sent to this group.
+        </p>
+        <p id="introduction" tal:condition="not:view/is_editing_self">
+          This page is used to change how SOMEOTHERUSER is notified of messages that are posted to from the group SOMEGROUP, and which email addresses are used to notify them of messages sent to this group.
+        </p>
+        <tal:block define="widgets view/widgets">
+          <tal:block replace="structure provider:groupserver.FormWidgets"/>
+        </tal:block>
+        <div class="buttons" tal:condition="view/availableActions">
+          <tal:block repeat="action view/actions">
+            <div class="formelementbutton">
+              <span tal:replace="structure action/render">Button</span>
+            </div>
+          </tal:block>
+        </div><!--buttons-->
+      </form>
+    </tal:block>
+    <tal:block metal:fill-slot="javascript">
+      <script type="text/javascript"
+        src="/++resource++popup_help-20071218.js">&#160;</script>
+      <script type="text/javascript"
+        src="/++resource++emailsettings_interlock-2010102801.js">&#160;</script>
+      <script type="text/javascript">
+        jQuery.noConflict()
+        jQuery(document).ready( function () {
+            GSEmailSettingsInterlock.init();
+
+        });
+      </script>
+    </tal:block>
+  </body>
+</html>
+
