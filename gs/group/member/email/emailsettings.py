@@ -166,14 +166,14 @@ class GroupEmailSettingsForm(PageForm):
                 user.remove_deliveryEmailAddressByKey(groupId, address)
             
             if defaultOrSpecific == 'specific' and emailAddresses:
-                m += u'<li>email will be delivered to: <ul>'
+                m += u'<li>Email will be delivered to: <ul>'
                 for address in emailAddresses:
                     user.add_deliveryEmailAddressByKey(groupId, address)
-                    m += u'<li>%s</li>' % address
+                    m += u'<li><code class="email">%s</code></li>' % address
                 m += u'</ul></li>'
             else:
                 address = self.userInfo.user.get_defaultDeliveryEmailAddresses()[0]
-                m += u'<li>Email will be delivered to the default address, which is: %s</li>' % address
+                m += u'<li>Email will be delivered to the default address, which is: <code class="email">%s</code></li>' % address
             
                     
         m += "</ul>"
