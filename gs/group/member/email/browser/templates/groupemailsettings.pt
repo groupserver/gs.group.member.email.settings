@@ -46,12 +46,15 @@
       <form enctype="multipart/form-data"  method="post" action="."
         tal:attributes="action request/URL" id="join">
         <p id="introduction" tal:condition="view/is_editing_self">
-          This page is used to change how you are notified of messages that are posted to THE GROUP NAME, and which email address that used to notify you of messages sent to this group.
+          This page is used to change how you are notified of messages that are posted to <b tal:content="view/groupInfo/name"/>, and which email addresses are used to notify you of messages sent to this group.
         </p>
         <p id="introduction" tal:condition="not:view/is_editing_self">
-          This page is used to change how SOMEOTHERUSER is notified of messages that are posted to from the group SOMEGROUP, and which email addresses are used to notify them of messages sent to this group.
+          This page is used to change how <b tal:content="view/userInfo/name"/> is notified of messages that are posted to from the group <b tal:content="view/groupInfo/name"/>, and which email addresses are used to notify them of messages sent to the group.
         </p>
-        <tal:block define="widgets view/widgets">
+        <tal:block define="widget python:[w for w in view.widgets][0]">
+          <span tal:replace="structure widget/hidden" />
+        </tal:block>
+        <tal:block define="widgets python:[w for w in view.widgets][1:]">
           <tal:block replace="structure provider:groupserver.FormWidgets"/>
         </tal:block>
         <div class="buttons" tal:condition="view/availableActions">

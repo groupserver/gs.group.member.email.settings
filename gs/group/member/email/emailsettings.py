@@ -40,15 +40,8 @@ class GroupEmailSettingsForm(PageForm):
         self.form_fields['destination'].custom_widget = multi_check_box_widget
         
     def setUpWidgets(self, ignore_request=True):
-        userId = self.request.get('userId')
-        if self.request.get('userId'):
-            user = getattr(self.ctx.contacts, userId)
-            if not checkPermission("zope2.ManageProperties", user):
-                raise Unauthorized("Not authorized to manage the settings of user %s." % (userId))
-            userInfo = IGSUserInfo(user)
-        else:
-            userInfo = self.userInfo
-
+        userInfo = self.userInfo
+        
         groupId = self.ctx.getId()
         # further sanity/security check
         if not user_member_of_group(userInfo, self.ctx):
@@ -68,7 +61,8 @@ class GroupEmailSettingsForm(PageForm):
         
         default_data = {'default_or_specific': default_or_specific,
                         'destination': specificEmailAddresses,
-                        'delivery': delivery}
+                        'delivery': delivery,
+                        'userId': userInfo.id}
         
         alsoProvides(userInfo, IGSGroupEmailSettings)
         self.widgets = form.setUpWidgets(
@@ -76,14 +70,17 @@ class GroupEmailSettingsForm(PageForm):
             data=default_data,
             ignore_request=False)
     
+    @property
     def is_editing_self(self):
         """ Check to see if we are editing ourselves, or another user.
         
         """
-        userId = self.request.get('userId')
+        me = createObject('groupserver.LoggedInUser', self.context)
+        userId = self.request.get('userId') or self.request.get('form.userId')
+        
         editing_self = True
         if userId:
-            if self.userInfo.id != userId:
+            if me.id != userId:
                 editing_self = False
         
         return editing_self
@@ -111,13 +108,22 @@ class GroupEmailSettingsForm(PageForm):
     @property
     def userInfo(self):
         if self.__userInfo == None:
-            self.__userInfo = createObject('groupserver.LoggedInUser',
-                                  self.context)
+            userId = self.request.get('userId') or self.request.get('form.userId')
+            if userId:
+                user = getattr(self.ctx.contacts, userId)
+                if not checkPermission("zope2.ManageProperties", user):
+                    raise Unauthorized("Not authorized to manage the settings of user %s." % (userId))
+                
+                userInfo = IGSUserInfo(user)
+            else:
+                userInfo = createObject('groupserver.LoggedInUser', self.context)
+                
+            self.__userInfo = userInfo
+            
         return self.__userInfo
         
     @form.action(label=u'Change', failure='handle_change_action_failure')
     def handle_change(self, action, data):
-        print data
         deliveryMethod = data['delivery']
         defaultOrSpecific = data['default_or_specific']
         emailAddresses = data['destination']
@@ -130,34 +136,48 @@ class GroupEmailSettingsForm(PageForm):
         groupId = self.groupInfo.id
         user = self.userInfo.user
         if self.is_editing_self:
-            name = u'You'
+            name = u'<a href="/p/%s">You</a>' % self.userInfo.id
         else:
-            name = self.userInfo.name
+            name = u'<a href="/p/%s">%s</a>' % (self.userInfo.id,
+                                                self.userInfo.name)
         
+        groupName = u'<a href="/groups/%s">%s</a>' % (self.groupInfo.id, 
+                                                      self.groupInfo.name)
+        
+        m = u"<ul>"
         # enable delivery to clear the delivery settings
         user.set_enableDeliveryByKey(groupId)
         if deliveryMethod == 'email':
-            m = u'%s will receive an email message every time '\
-                    u'someone posts to %s.' % (name, self.groupInfo.name)   
+            m += u'<li><b>%s</b> will receive an email message every time '\
+                 u'someone posts to <b>%s</b>.</li>' % (name, groupName)   
         elif deliveryMethod == 'digest':
             user.set_enableDigestByKey(groupId)
-            m = u'%s will receive a daily digest of topics.' % name
+            m += u'<li><b>%s</b> will receive a daily digest of topics posted' \
+                 u' to <b>%s</b>.</li>' % (name, groupName)
         elif deliveryMethod == 'web':
             user.set_disableDeliveryByKey(groupId)
-            m = u'%s will not receive any email from this group.' % name
+            m += u'<li><b>%s</b> will not receive any email from ' \
+                 u'<b>%s</b>.</li>' % (name, groupName)
         
         if deliveryMethod != 'web':
             # reset the specific addresses
             specificAddresses = user.get_specificEmailAddressesByKey(groupId)
             for address in specificAddresses:
                 user.remove_deliveryEmailAddressByKey(groupId, address)
-                
-            if defaultOrSpecific == 'specific':
+            
+            if defaultOrSpecific == 'specific' and emailAddresses:
+                m += u'<li>email will be delivered to: <ul>'
                 for address in emailAddresses:
                     user.add_deliveryEmailAddressByKey(groupId, address)
+                    m += u'<li>%s</li>' % address
+                m += u'</ul></li>'
+            else:
+                address = self.userInfo.user.get_defaultDeliveryEmailAddresses()[0]
+                m += u'<li>Email will be delivered to the default address, which is: %s</li>' % address
             
-        self.status = u'You have joined <a class="group" href="%s">%s</a>. %s' %\
-          (self.groupInfo.url, self.groupInfo.name, m)
+                    
+        m += "</ul>"
+        self.status = m
         
         assert type(self.status) == unicode
         

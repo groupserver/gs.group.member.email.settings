@@ -3,6 +3,12 @@ from zope.interface import Interface
 from zope.schema import *
 from Products.GSProfile.interfaces import deliveryVocab
 
+class IGSGroupEmailUserId(Interface):
+    userId = TextLine(title=u"User Id",
+                      description=u"The ID of the user being edited",
+                      required=True
+                      )
+
 class IGSGroupEmailDeliverySettings(Interface):
     delivery = Choice(title=u'Message Delivery',
       description=u'Your message delivery settings.',
@@ -21,7 +27,7 @@ class IGSGroupEmailDestinationSettings(Interface):
                        unique=True,
                        required=False)
 
-class IGSGroupEmailSettings(IGSGroupEmailDeliverySettings, IGSGroupEmailDestinationSettings):
+class IGSGroupEmailSettings(IGSGroupEmailUserId, IGSGroupEmailDeliverySettings, IGSGroupEmailDestinationSettings):
     pass
    
     
