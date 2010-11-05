@@ -3,24 +3,21 @@ try:
     from five.formlib.formbase import PageForm
 except ImportError:
     from Products.Five.formlib.formbase import PageForm
-from zope.interface import implements, providedBy, alsoProvides
+from zope.interface import implements, alsoProvides
 from zope.schema.vocabulary import SimpleTerm
 from zope.schema.interfaces import IVocabulary, \
-  IVocabularyTokenized, ITitledTokenizedTerm
-from zope.security import checkPermission, canAccess
+  IVocabularyTokenized
+from zope.security import checkPermission
 from zope.interface.common.mapping import IEnumerableMapping
 from zope.component import createObject
 from zope.formlib import form
 from Products.Five.browser.pagetemplatefile import ZopeTwoPageTemplateFile
-from gs.group.member.join.interfaces import IGSJoiningUser
 from gs.content.form.radio import radio_widget
 from Products.GSProfile.edit_profile import multi_check_box_widget
 from Products.GSGroupMember.groupmembership import user_member_of_group
 from interfaces import IGSGroupEmailSettings
 from Products.XWFCore.XWFUtils import get_the_actual_instance_from_zope
 from Products.CustomUserFolder.interfaces import IGSUserInfo
-from Products.CustomUserFolder.interfaces import ICustomUser
-from Products.GSGroupMember.groupmembership import user_member_of_group
 from zope.security.interfaces import Unauthorized
 
 class GroupEmailSettingsForm(PageForm):
@@ -45,7 +42,7 @@ class GroupEmailSettingsForm(PageForm):
         groupId = self.ctx.getId()
         # further sanity/security check
         if not user_member_of_group(userInfo, self.ctx):
-             raise Unauthorized("User %s was not a member of the group %s" % 
+            raise Unauthorized("User %s was not a member of the group %s" % 
                                 (userInfo.id, groupId))
         
         specificEmailAddresses = userInfo.user.get_specificEmailAddressesByKey(groupId)
