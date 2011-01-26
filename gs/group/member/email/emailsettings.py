@@ -1,8 +1,5 @@
 # coding=utf-8
-try:
-    from five.formlib.formbase import PageForm
-except ImportError:
-    from Products.Five.formlib.formbase import PageForm
+from five.formlib.formbase import PageForm
 from zope.interface import implements, alsoProvides
 from zope.schema.vocabulary import SimpleTerm
 from zope.schema.interfaces import IVocabulary, \
@@ -19,6 +16,7 @@ from interfaces import IGSGroupEmailSettings
 from Products.XWFCore.XWFUtils import get_the_actual_instance_from_zope
 from Products.CustomUserFolder.interfaces import IGSUserInfo
 from zope.security.interfaces import Unauthorized
+from gs.profile.email.base.emailuser import EmailUser
 
 class GroupEmailSettingsForm(PageForm):
     label = u'GroupEmailSettings'
@@ -133,13 +131,13 @@ class GroupEmailSettingsForm(PageForm):
         groupId = self.groupInfo.id
         user = self.userInfo.user
         if self.is_editing_self:
-            name = u'<a href="/p/%s">You</a>' % self.userInfo.id
+            name = u'<a href="%s">You</a>' % self.userInfo.url
         else:
-            name = u'<a href="/p/%s">%s</a>' % (self.userInfo.id,
-                                                self.userInfo.name)
+            name = u'<a href="%s">%s</a>' % (self.userInfo.url,
+                                             self.userInfo.name)
         
-        groupName = u'<a href="/groups/%s">%s</a>' % (self.groupInfo.id, 
-                                                      self.groupInfo.name)
+        groupName = u'<a href="%s">%s</a>' % (self.groupInfo.url, 
+                                              self.groupInfo.name)
         
         m = u"<ul>"
         # enable delivery to clear the delivery settings
@@ -169,9 +167,9 @@ class GroupEmailSettingsForm(PageForm):
                     m += u'<li><code class="email">%s</code></li>' % address
                 m += u'</ul></li>'
             else:
-                address = self.userInfo.user.get_defaultDeliveryEmailAddresses()[0]
+                emailUser = EmailUser(self.context, self.userInfo)
+                address = emailUser.get_delivery_addresses()[0]
                 m += u'<li>Email will be delivered to the default address, which is: <code class="email">%s</code></li>' % address
-            
                     
         m += "</ul>"
         self.status = m
@@ -196,7 +194,8 @@ class DefaultOrSpecificEmailVocab(object):
         else:
             self.userInfo = createObject('groupserver.LoggedInUser', context)
 
-        defaultAddresses = self.userInfo.user.get_defaultDeliveryEmailAddresses()
+        emailUser = EmailUser(self.userInfo.user, self.userInfo)
+        defaultAddresses = emailUser.get_delivery_addresses()
         self.defaultAddress = u''
         if defaultAddresses:
             self.defaultAddress = defaultAddresses[0]
