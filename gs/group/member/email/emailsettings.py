@@ -136,24 +136,24 @@ class GroupEmailSettingsForm(PageForm):
             name = u'<a href="%s">%s</a>' % (self.userInfo.url,
                                              self.userInfo.name)
         
-        groupName = u'<a href="%s">%s</a>' % (self.groupInfo.url, 
+        groupName = u'<a href="%s">%s</a>' % (self.groupInfo.relativeURL, 
                                               self.groupInfo.name)
         
-        m = u"<ul>"
+        m = u""
         # enable delivery to clear the delivery settings
         user.set_enableDeliveryByKey(groupId)
         if deliveryMethod == 'email':
-            m += u'<li><b>%s</b> will receive an email message every time '\
-                 u'someone posts to <b>%s</b>.</li>' % (name, groupName)   
+            m += u'<strong>%s</strong> will receive an email message '\
+                u'every time someone posts to %s.' % (name, groupName)   
         elif deliveryMethod == 'digest':
             user.set_enableDigestByKey(groupId)
-            m += u'<li><b>%s</b> will receive a daily digest of topics posted' \
-                 u' to <b>%s</b>.</li>' % (name, groupName)
+            m += u'<strong>%s</strong> will receive a daily digest of '\
+                u'topics posted to %s.' % (name, groupName)
         elif deliveryMethod == 'web':
             user.set_disableDeliveryByKey(groupId)
-            m += u'<li><b>%s</b> will not receive any email from ' \
-                 u'<b>%s</b>.</li>' % (name, groupName)
-        
+            m += u'<strong>%s</strong> will not receive any email from ' \
+                 u'%s.' % (name, groupName)
+        m += u' '
         if deliveryMethod != 'web':
             # reset the specific addresses
             specificAddresses = user.get_specificEmailAddressesByKey(groupId)
@@ -161,17 +161,16 @@ class GroupEmailSettingsForm(PageForm):
                 user.remove_deliveryEmailAddressByKey(groupId, address)
             
             if defaultOrSpecific == 'specific' and emailAddresses:
-                m += u'<li>Email will be delivered to: <ul>'
+                m += u'Email will be delivered to:\n<ul>'
                 for address in emailAddresses:
                     user.add_deliveryEmailAddressByKey(groupId, address)
                     m += u'<li><code class="email">%s</code></li>' % address
-                m += u'</ul></li>'
+                m += u'</ul>\n'
             else:
                 emailUser = EmailUser(self.context, self.userInfo)
                 address = emailUser.get_delivery_addresses()[0]
-                m += u'<li>Email will be delivered to the default address, which is: <code class="email">%s</code></li>' % address
-                    
-        m += "</ul>"
+                m += u'Email will be delivered to the default address, which '\
+                    u'is: <code class="email">%s</code>' % address
         self.status = m
         
         assert type(self.status) == unicode
