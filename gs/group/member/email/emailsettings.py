@@ -16,7 +16,7 @@ from interfaces import IGSGroupEmailSettings
 
 
 class GroupEmailSettingsForm(GroupForm):
-    label = u'GroupEmailSettings'
+    label = u'Email Settings'
     pageTemplateFileName = 'browser/templates/groupemailsettings.pt'
     template = ZopeTwoPageTemplateFile(pageTemplateFileName)
     form_fields = form.Fields(IGSGroupEmailSettings, render_context=True)
