@@ -32,18 +32,17 @@ function GSEmailSettingsInterlock() {
         }
     }
     function defaultOrSpecificChange() {
-        var updatedWidget = null, checkedValue = null, destinationWidget = null;
+        var updatedWidget = null, destinationWidget = null;
 
         updatedWidget = jQuery(this);
-        checkedValue = updatedWidget.attr("checked");
         destinationWidget = jQuery("#widget-form\\.destination");
 
         // check what was selected
-        if (checkedValue == true && updatedWidget.attr("value") == 'default') {
+        if (updatedWidget.attr("value") == 'default') {
             destinationWidget.hide();
             allDestinationCheckboxes.attr("disabled", true);
         }
-        else if (checkedValue == true && updatedWidget.attr("value") == 'specific') {
+        else if (updatedWidget.attr("value") == 'specific') {
             destinationWidget.show();
             allDestinationCheckboxes.attr("disabled", false);
         }
