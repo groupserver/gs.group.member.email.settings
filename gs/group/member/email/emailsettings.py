@@ -6,12 +6,10 @@ from zope.interface import alsoProvides
 from zope.security import checkPermission
 from zope.security.interfaces import Unauthorized
 from Products.Five.browser.pagetemplatefile import ZopeTwoPageTemplateFile
-from gs.content.form import radio_widget
+from gs.content.form import radio_widget, multi_check_box_widget
 from gs.group.base import GroupForm
+from gs.group.member.base.utils import user_member_of_group
 from gs.profile.email.base.emailuser import EmailUser
-from Products.XWFCore.XWFUtils import get_the_actual_instance_from_zope
-from Products.GSProfile.edit_profile import multi_check_box_widget
-from Products.GSGroupMember.groupmembership import user_member_of_group
 from interfaces import IGSGroupEmailSettings
 
 
@@ -21,10 +19,8 @@ class GroupEmailSettingsForm(GroupForm):
     template = ZopeTwoPageTemplateFile(pageTemplateFileName)
     form_fields = form.Fields(IGSGroupEmailSettings, render_context=True)
 
-    def __init__(self, context, request):
-        super(GroupEmailSettingsForm, self).__init__(context, request)
-        self.__userInfo = None
-        self.__mailingListInfo = None
+    def __init__(self, group, request):
+        super(GroupEmailSettingsForm, self).__init__(group, request)
         self.form_fields['delivery'].custom_widget = radio_widget
         self.form_fields['default_or_specific'].custom_widget = radio_widget
         self.form_fields['destination'].custom_widget = multi_check_box_widget
@@ -32,9 +28,9 @@ class GroupEmailSettingsForm(GroupForm):
     def setUpWidgets(self, ignore_request=True):
         userInfo = self.userInfo
 
-        groupId = self.ctx.getId()
+        groupId = self.groupInfo.id
         # further sanity/security check
-        if not user_member_of_group(userInfo, self.ctx):
+        if not user_member_of_group(userInfo, self.context):
             raise Unauthorized("User %s was not a member of the group %s" %
                                 (userInfo.id, groupId))
         u = userInfo.user
@@ -75,20 +71,17 @@ class GroupEmailSettingsForm(GroupForm):
 
         return editing_self
 
-    @property
-    def ctx(self):
-        return get_the_actual_instance_from_zope(self.context)
-
     @Lazy
     def userInfo(self):
         userId = self.request.get('userId') or self.request.get('form.userId')
         if userId:
-            retval = createObject('groupserver.UserFromID', self.context,
-                                    userId)
-            if not checkPermission("zope2.ManageProperties", retval.user):
+            user = getattr(self.context.contacts, userId)
+            if not checkPermission("zope2.ManageProperties", user):
                 m = "Not authorized to manage the settings of user {0}."
                 msg = m.format(userId)
                 raise Unauthorized(msg)
+            retval = createObject('groupserver.UserFromId', self.context,
+                                    userId)
         else:
             retval = self.loggedInUser
         return retval
