@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
   xmlns:tal="http://xml.zope.org/namespaces/tal"
   xmlns:metal="http://xml.zope.org/namespaces/metal"
-  metal:use-macro="context/@@groupserver_site_home_layout/page">
+  metal:use-macro="context/@@groupserver_layout/page">
   <head>
     <title metal:fill-slot="title">
       <span tal:replace="string:${view/label}: ${view/groupInfo/name}: ${view/siteInfo/get_name}">
@@ -27,6 +27,19 @@
     </tal:block>
   </head>
   <body>
+    <ul metal:fill-slot="breadcrumb">
+      <li>
+        <a href="/" class="icon-alone">
+          <span aria-hidden="true" data-icon="&#x2302;"></span>
+          <span class="screen-reader-text">Site home page</span>
+        </a>
+      </li>
+      <li>
+        <strong class="group" 
+              tal:content="view/groupInfo/name">This group</strong>
+      </li>
+      <li tal:content="view/label">This form</li>
+    </ul>
     <tal:block content="structure provider:groupserver.FormStatusMessage"
       define="errors view/errors; status view/status; widgets view/widgets"
       metal:fill-slot="messages">&#160;</tal:block>
