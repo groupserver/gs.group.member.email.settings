@@ -10,30 +10,33 @@ function GSEmailSettingsInterlock() {
 
     // Private methods
     function deliveryChange() {
-        var updatedWidget = jQuery(this);
-        var checkedValue = updatedWidget.attr("checked");
+        var updatedWidget = null, v = null;
+
+        updatedWidget = jQuery(this);
 
         // check what was selected
-        if (checkedValue == true && updatedWidget.attr("value") == 'web') {
+        if ( updatedWidget.attr("value") == 'web' ) {
             destinationWidget.hide();
             defaultOrSpecificWidget.hide();
             // allDestinationCheckboxes.attr("disabled", true);
             // allDefaultOrSpecificRadios.attr("disabled", true);
         }
-        else if (checkedValue == true) {
-            if (checkedDefaultOrSpecificRadios.attr("value") == "specific") {
+        else {  // Digest or One Email Per Post.
+            defaultOrSpecificWidget.show();
+            v = checkedDefaultOrSpecificRadios.attr("value");
+            if (v == "specific") {
                 destinationWidget.show();
             }
-            defaultOrSpecificWidget.show();
             allDestinationCheckboxes.attr("disabled", false);
             allDefaultOrSpecificRadios.attr("disabled", false);
         }
     }
-    
     function defaultOrSpecificChange() {
-        var updatedWidget = jQuery(this);
-        var checkedValue = updatedWidget.attr("checked");
-        var destinationWidget = jQuery("#widget-form\\.destination");
+        var updatedWidget = null, checkedValue = null, destinationWidget = null;
+
+        updatedWidget = jQuery(this);
+        checkedValue = updatedWidget.attr("checked");
+        destinationWidget = jQuery("#widget-form\\.destination");
 
         // check what was selected
         if (checkedValue == true && updatedWidget.attr("value") == 'default') {
