@@ -46,13 +46,14 @@ function GSEmailSettingsInterlock() {
             destinationWidget.show();
             allDestinationCheckboxes.attr("disabled", false);
         }
+        checkedDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:checked");
     }
     
     function initialSettings() {
         allDestinationCheckboxes = jQuery("input[name=form\\.destination]:checkbox");
         allDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:radio");
-        checkedDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:checked")
-        destinationWidget = jQuery("#widget-form\\.destination")
+        checkedDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:checked");
+        destinationWidget = jQuery("#widget-form\\.destination");
         defaultOrSpecificWidget = jQuery("#widget-form\\.default_or_specific");
     }
     initialSettings();  // Note the automatic execution
