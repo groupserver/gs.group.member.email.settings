@@ -1,14 +1,16 @@
 // module for interlocks on the email settings form.
 jQuery.noConflict();
-GSEmailSettingsInterlock = function () {
+
+function GSEmailSettingsInterlock() {
+    var allDestinationCheckboxes = null, 
+        allDefaultOrSpecificRadios = null, 
+        checkedDefaultOrSpecificRadios = null,
+        destinationWidget = null,
+        defaultOrSpecificWidget = null;
+
     // Private methods
-    var deliveryChange = function () {
+    function deliveryChange() {
         var updatedWidget = jQuery(this);
-        var allDestinationCheckboxes = jQuery("input[name=form\\.destination]:checkbox");
-        var allDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:radio");
-        var checkedDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:checked");
-        var destinationWidget = jQuery("#widget-form\\.destination");
-        var defaultOrSpecificWidget = jQuery("#widget-form\\.default_or_specific");
         var checkedValue = updatedWidget.attr("checked");
 
         // check what was selected
@@ -28,9 +30,8 @@ GSEmailSettingsInterlock = function () {
         }
     }
     
-    var defaultOrSpecificChange = function () {
+    function defaultOrSpecificChange() {
         var updatedWidget = jQuery(this);
-        var allDestinationCheckboxes = jQuery("input[name=form\\.destination]:checkbox");
         var checkedValue = updatedWidget.attr("checked");
         var destinationWidget = jQuery("#widget-form\\.destination");
 
@@ -45,28 +46,40 @@ GSEmailSettingsInterlock = function () {
         }
     }
     
-    var initialSettings = function () {
-        var checkedDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:checked");
-        var checkedDeliveryRadios = jQuery("input[name=form\\.delivery]:checked");
-        var destinationWidget = jQuery("#widget-form\\.destination");
-        var defaultOrSpecificWidget = jQuery("#widget-form\\.default_or_specific");
-        
-        if (checkedDefaultOrSpecificRadios.attr("value") == "default") {
-            destinationWidget.hide();
-        }
-        
-        if (checkedDeliveryRadios.attr("value") == "web") {
-            defaultOrSpecificWidget.hide();
-            destinationWidget.hide();
-        }
+    function initialSettings() {
+        allDestinationCheckboxes = jQuery("input[name=form\\.destination]:checkbox");
+        allDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:radio");
+        checkedDefaultOrSpecificRadios = jQuery("input[name=form\\.default_or_specific]:checked")
+        destinationWidget = jQuery("#widget-form\\.destination")
+        defaultOrSpecificWidget = jQuery("#widget-form\\.default_or_specific");
     }
+    initialSettings();  // Note the automatic execution
     
     // Public methods and properties
     return {
         init: function () {
-    		initialSettings();
-            jQuery("input[name=form\\.default_or_specific]:radio").change(defaultOrSpecificChange);
-            jQuery("input[name=form\\.delivery]:radio").change(deliveryChange);
+            var radios = null, checkedDeliveryRadios = null;
+
+            allDefaultOrSpecificRadios.change(defaultOrSpecificChange);
+
+            radios = jQuery("input[name=form\\.delivery]:radio");
+            radios.change(deliveryChange);
+
+            checkedDeliveryRadios = jQuery("input[name=form\\.delivery]:checked");
+            if (checkedDefaultOrSpecificRadios.attr("value") == "default") {
+                destinationWidget.hide();
+            }
+            
+            if (checkedDeliveryRadios.attr("value") == "web") {
+                defaultOrSpecificWidget.hide();
+                destinationWidget.hide();
+            }
         }
     };
-}();
+}
+
+jQuery(window).load( function () {
+    var i = null;
+    i = GSEmailSettingsInterlock();
+    i.init();    
+});
