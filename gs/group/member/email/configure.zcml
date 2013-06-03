@@ -5,18 +5,18 @@
   i18n_domain="groupserver">
   
   <browser:page 
-    for="Products.XWFChat.interfaces.IGSGroupFolder"
     name="email_settings.html"
+    for="gs.group.base.interfaces.IGSGroupMarker"
     class=".emailsettings.GroupEmailSettingsForm"
     permission="zope2.View"/>
-    
+  
   <utility
-      provides="zope.schema.interfaces.IVocabularyFactory"
-      component="gs.group.member.email.emailsettings.DefaultOrSpecificEmailVocab"
-      name="DefaultOrSpecificEmailVocab"
-      />
+    name="DefaultOrSpecificEmailVocab"
+    component="gs.group.member.email.emailsettings.DefaultOrSpecificEmailVocab"
+    provides="zope.schema.interfaces.IVocabularyFactory" />
 
-  <browser:resource name="emailsettings_interlock-2010102801.js"
+  <browser:resource 
+    name="emailsettings_interlock-2010102801.js"
     file="browser/javascript/emailsettings_interlock.js"
     permission="zope.Public" />
 
