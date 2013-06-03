@@ -35,8 +35,9 @@
         </a>
       </li>
       <li>
-        <strong class="group" 
-              tal:content="view/groupInfo/name">This group</strong>
+        <a tal:attributes="href view/groupInfo/relativeURL"
+           href="#"><strong tal:content="view/groupInfo/name"
+                            class="group">Group</strong></a>
       </li>
       <li tal:content="view/label">This form</li>
     </ul>
@@ -48,10 +49,17 @@
       <form enctype="multipart/form-data"  method="post" action="."
         tal:attributes="action request/URL" id="join">
         <p id="introduction" tal:condition="view/is_editing_self">
-          This page is used to change how you are notified of messages that are posted to <b tal:content="view/groupInfo/name"/>, and which email addresses are used to notify you of messages sent to this group.
+          This page is used to change how you are notified of messages that
+          are posted to <strong tal:content="view/groupInfo/name"/>, and which
+          email addresses are used to notify you of messages sent to this
+          group.
         </p>
         <p id="introduction" tal:condition="not:view/is_editing_self">
-          This page is used to change how <b tal:content="view/userInfo/name"/> is notified of messages that are posted to from the group <b tal:content="view/groupInfo/name"/>, and which email addresses are used to notify them of messages sent to the group.
+          This page is used to change how
+          <strong tal:content="view/userInfo/name"/> 
+          is notified of messages that are posted to from the group 
+          <strong tal:content="view/groupInfo/name"/>, and which email 
+          addresses are used to notify them of messages sent to the group.
         </p>
         <tal:block define="widget python:[w for w in view.widgets][0]">
           <span tal:replace="structure widget/hidden" />
@@ -68,19 +76,8 @@
         </div><!--buttons-->
       </form>
     </tal:block>
-    <tal:block metal:fill-slot="javascript">
-      <script type="text/javascript"
-        src="/++resource++popup_help-20071218.js">&#160;</script>
-      <script type="text/javascript"
-        src="/++resource++emailsettings_interlock-2010102801.js">&#160;</script>
-      <script type="text/javascript">
-        jQuery.noConflict()
-        jQuery(document).ready( function () {
-            GSEmailSettingsInterlock.init();
-
-        });
-      </script>
-    </tal:block>
+    <script metal:fill-slot="javascript" type="text/javascript"
+            src="/++resource++gs-group-member-email-20130603.js"
+            defer="true">&#160;</script>
   </body>
 </html>
-

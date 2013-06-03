@@ -16,7 +16,7 @@
     provides="zope.schema.interfaces.IVocabularyFactory" />
 
   <browser:resource 
-    name="emailsettings_interlock-2010102801.js"
+    name="gs-group-member-email-20130603.js"
     file="browser/javascript/emailsettings_interlock.js"
     permission="zope.Public" />
 
