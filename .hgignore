@@ -3,5 +3,5 @@ syntax: glob
 *~
 *egg-info
 dist
-.orig
-
+*orig
+*nja
