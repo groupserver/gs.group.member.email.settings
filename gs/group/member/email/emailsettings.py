@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zope.cachedescriptors import Lazy
+from zope.cachedescriptors.property import Lazy
 from zope.component import createObject
 from zope.formlib import form
 from zope.interface import alsoProvides
@@ -65,7 +65,7 @@ class GroupEmailSettingsForm(GroupForm):
         """ Check to see if we are editing ourselves, or another user.
 
         """
-        me = createObject('groupserver.LoggedInUser', self.context)
+        me = self.loggedInUser
         userId = self.request.get('userId') or self.request.get('form.userId')
 
         editing_self = True
@@ -90,7 +90,7 @@ class GroupEmailSettingsForm(GroupForm):
                 msg = m.format(userId)
                 raise Unauthorized(msg)
         else:
-            retval = super(GroupEmailSettingsForm, self).userInfo
+            retval = self.loggedInUser
         return retval
 
     @form.action(label=u'Change', failure='handle_change_action_failure')
