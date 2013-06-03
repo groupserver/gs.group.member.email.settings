@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 import os
 from setuptools import setup, find_packages
 from version import get_version
@@ -7,7 +7,7 @@ version = get_version()
 
 setup(name='gs.group.member.email',
     version=version,
-    description="The pages and code to allow the editing of group related email details",
+    description="The pages to allow the editing of group related email details",
     long_description=open("README.txt").read() + "\n" +
                     open(os.path.join("docs", "HISTORY.txt")).read(),
     classifiers=[
@@ -34,10 +34,8 @@ setup(name='gs.group.member.email',
         'setuptools',
         'gs.profile.notify',
         'gs.group.member.base',
-        # -*- Extra requirements: -*-
     ],
     entry_points="""
     # -*- Entry points: -*-
     """,
 )
-
