@@ -1,23 +1,18 @@
 # -*- coding: utf-8 -*-
 from zope.cachedescriptors import Lazy
-from zope.interface import implements, alsoProvides
-from zope.schema.vocabulary import SimpleTerm
-from zope.schema.interfaces import IVocabulary, \
-  IVocabularyTokenized
-from zope.security import checkPermission
-from zope.interface.common.mapping import IEnumerableMapping
 from zope.component import createObject
 from zope.formlib import form
+from zope.interface import alsoProvides
+from zope.security import checkPermission
+from zope.security.interfaces import Unauthorized
 from Products.Five.browser.pagetemplatefile import ZopeTwoPageTemplateFile
 from gs.content.form import radio_widget
 from gs.group.base import GroupForm
+from gs.profile.email.base.emailuser import EmailUser
+from Products.XWFCore.XWFUtils import get_the_actual_instance_from_zope
 from Products.GSProfile.edit_profile import multi_check_box_widget
 from Products.GSGroupMember.groupmembership import user_member_of_group
 from interfaces import IGSGroupEmailSettings
-from Products.XWFCore.XWFUtils import get_the_actual_instance_from_zope
-from Products.CustomUserFolder.interfaces import IGSUserInfo
-from zope.security.interfaces import Unauthorized
-from gs.profile.email.base.emailuser import EmailUser
 
 
 class GroupEmailSettingsForm(GroupForm):
@@ -88,12 +83,12 @@ class GroupEmailSettingsForm(GroupForm):
     def userInfo(self):
         userId = self.request.get('userId') or self.request.get('form.userId')
         if userId:
-            user = getattr(self.ctx.contacts, userId)
-            if not checkPermission("zope2.ManageProperties", user):
+            retval = createObject('groupserver.UserFromID', self.context,
+                                    userId)
+            if not checkPermission("zope2.ManageProperties", retval.user):
                 m = "Not authorized to manage the settings of user {0}."
                 msg = m.format(userId)
                 raise Unauthorized(msg)
-            retval = IGSUserInfo(user)
         else:
             retval = super(GroupEmailSettingsForm, self).userInfo
         return retval
@@ -164,64 +159,3 @@ class GroupEmailSettingsForm(GroupForm):
             self.status = u'<p>There is an error:</p>'
         else:
             self.status = u'<p>There are errors:</p>'
-
-
-class DefaultOrSpecificEmailVocab(object):
-    implements(IVocabulary, IVocabularyTokenized)
-    __used_for__ = IEnumerableMapping
-
-    def __init__(self, context):
-        self.context = context
-        # the context we are passed might already be a userinfo
-        if IGSUserInfo.providedBy(context):
-            self.userInfo = context
-        else:
-            self.userInfo = createObject('groupserver.LoggedInUser', context)
-
-        emailUser = EmailUser(self.userInfo.user, self.userInfo)
-        defaultAddresses = emailUser.get_delivery_addresses()
-        self.defaultAddress = u''
-        if defaultAddresses:
-            self.defaultAddress = defaultAddresses[0]
-
-    def __iter__(self):
-        """See zope.schema.interfaces.IIterableVocabulary"""
-        retval = [SimpleTerm('default', 'default', u'Default (%s)' %
-                                self.defaultAddress),
-                   SimpleTerm('specific', 'specific',
-                               u'Specific Address or Addresses'),
-                 ]
-        return iter(retval)
-
-    def __len__(self):
-        """See zope.schema.interfaces.IIterableVocabulary"""
-        return 2
-
-    def __contains__(self, value):
-        """See zope.schema.interfaces.IBaseVocabulary"""
-        retval = False
-        if value in ('specific', 'default'):
-            retval = True
-        assert type(retval) == bool
-        return retval
-
-    def getQuery(self):
-        """See zope.schema.interfaces.IBaseVocabulary"""
-        return None
-
-    def getTerm(self, value):
-        """See zope.schema.interfaces.IBaseVocabulary"""
-        return self.getTermByToken(value)
-
-    def getTermByToken(self, token):
-        """See zope.schema.interfaces.IVocabularyTokenized"""
-        retval = None
-        if token == 'default':
-            retval = SimpleTerm('default', 'default',
-                                u'Default (%s)' % self.defaultAddress)
-        elif token == 'specific':
-            retval = SimpleTerm('specific', 'specific',
-                                    u'Specific Address or Addresses')
-        if retval:
-            return retval
-        raise LookupError(token)

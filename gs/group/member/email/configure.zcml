@@ -12,7 +12,7 @@
   
   <utility
     name="DefaultOrSpecificEmailVocab"
-    component="gs.group.member.email.emailsettings.DefaultOrSpecificEmailVocab"
+    component="gs.group.member.email.vocabulary.DefaultOrSpecificEmailVocab"
     provides="zope.schema.interfaces.IVocabularyFactory" />
 
   <browser:resource 
