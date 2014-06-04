@@ -14,16 +14,18 @@
 ##############################################################################
 from __future__ import absolute_import, unicode_literals
 from zope.cachedescriptors.property import Lazy
-from zope.component import createObject
+from zope.component import createObject, getMultiAdapter
 from zope.formlib import form
 from zope.interface import alsoProvides
 from zope.security import checkPermission
 from zope.security.interfaces import Unauthorized
 from Products.Five.browser.pagetemplatefile import ZopeTwoPageTemplateFile
 from gs.content.form import radio_widget, multi_check_box_widget
+from gs.core import comma_comma_and
 from gs.group.base import GroupForm
 from gs.group.member.base.utils import user_member_of_group
-from gs.profile.email.base.emailuser import EmailUser
+from gs.group.member.email.base.interfaces import IGroupEmailUser
+from gs.group.member.email.base import GroupEmailSetting
 from .interfaces import IGSGroupEmailSettings
 
 
@@ -40,45 +42,43 @@ class GroupEmailSettingsForm(GroupForm):
         self.form_fields['destination'].custom_widget = multi_check_box_widget
 
     def setUpWidgets(self, ignore_request=True):
-        userInfo = self.userInfo
-
         groupId = self.groupInfo.id
         # further sanity/security check
-        if not user_member_of_group(userInfo, self.context):
-            raise Unauthorized("User %s was not a member of the group %s" %
-                                (userInfo.id, groupId))
-        u = userInfo.user
-        specificEmailAddresses = u.get_specificEmailAddressesByKey(groupId)
-        deliverySettings = userInfo.user.get_deliverySettingsByKey(groupId)
+        if not user_member_of_group(self.userInfo, self.context):
+            m = "User {0} was not a member of the group {1}"
+            msg = m.format(self.userInfo.id, groupId)
+            raise Unauthorized(msg)
+        specificEmailAddresses = \
+                            self.groupEmailUser.get_specific_email_addresses()
+        deliverySetting = self.groupEmailUser.get_delivery_setting()
         delivery = 'email'
         default_or_specific = 'default'
-        if deliverySettings == 0:
+        if deliverySetting == GroupEmailSetting.webonly:
             delivery = 'web'
-        elif deliverySettings == 3:
+        elif deliverySetting == GroupEmailSetting.digest:
             delivery = 'digest'
-        elif deliverySettings == 2:
+        elif deliverySetting == GroupEmailSetting.specific:
             default_or_specific = 'specific'
 
         default_data = {'default_or_specific': default_or_specific,
                         'destination': specificEmailAddresses,
                         'delivery': delivery,
-                        'userId': userInfo.id}
+                        'userId': self.userInfo.id}
 
-        alsoProvides(userInfo, IGSGroupEmailSettings)
+        alsoProvides(self.userInfo, IGSGroupEmailSettings)
         self.widgets = form.setUpWidgets(
-            self.form_fields, self.prefix, userInfo, self.request,
+            self.form_fields, self.prefix, self.userInfo, self.request,
             data=default_data,
             ignore_request=False)
 
     @property
     def is_editing_self(self):
-        """ Check to see if we are editing ourselves, or another user.
-
-        """
+        """ Check to see if we are editing ourselves, or another user."""
         me = self.loggedInUser
         userId = self.request.get('userId') or self.request.get('form.userId')
 
         editing_self = True
+        # editing_self = (userId is not None) and (me.userId == userId)
         if userId:
             if me.id != userId:
                 editing_self = False
@@ -100,6 +100,12 @@ class GroupEmailSettingsForm(GroupForm):
             retval = self.loggedInUser
         return retval
 
+    @Lazy
+    def groupEmailUser(self):
+        retval = getMultiAdapter((self.userInfo, self.groupInfo),
+                                    IGroupEmailUser)
+        return retval
+
     @form.action(label='Change', failure='handle_change_action_failure')
     def handle_change(self, action, data):
         deliveryMethod = data['delivery']
@@ -109,54 +115,49 @@ class GroupEmailSettingsForm(GroupForm):
         assert deliveryMethod in ('email', 'digest', 'web'), \
             "Unexpected delivery option %s" % deliveryMethod
         if deliveryMethod != 'web':
-            assert defaultOrSpecific in ('default', 'specific'), \
-                "Unexpected defaultOrSpecific %s" % defaultOrSpecific
-            assert isinstance(emailAddresses, list), \
-                "destination addresses %s are not in a list" % emailAddresses
+            if defaultOrSpecific not in ('default', 'specific'):
+                errMsg = "Unexpected defaultOrSpecific %s" % defaultOrSpecific
+                raise ValueError(errMsg)
+            if not(isinstance(emailAddresses, list)):
+                errM = "destination addresses {0} are not in a list"
+                errMsg = errM.format(emailAddresses)
+                raise TypeError(errMsg)
 
-        groupId = self.groupInfo.id
-        user = self.userInfo.user
         if self.is_editing_self:
             name = '<a href="%s">You</a>' % self.userInfo.url
         else:
             name = '<a href="%s">%s</a>' % (self.userInfo.url,
                                              self.userInfo.name)
-
         groupName = '<a href="%s">%s</a>' % (self.groupInfo.relativeURL,
                                               self.groupInfo.name)
-
         m = ""
-        # enable delivery to clear the delivery settings
-        user.set_enableDeliveryByKey(groupId)
+        self.groupEmailUser.set_default_delivery()
         if deliveryMethod == 'email':
             m += '<strong>%s</strong> will receive an email message '\
                 'every time someone posts to %s.' % (name, groupName)
         elif deliveryMethod == 'digest':
-            user.set_enableDigestByKey(groupId)
+            self.groupEmailUser.set_digest()
             m += '<strong>%s</strong> will receive a daily digest of '\
                 'topics posted to %s.' % (name, groupName)
         elif deliveryMethod == 'web':
-            user.set_disableDeliveryByKey(groupId)
+            self.groupEmailUser.set_webonly()
             m += '<strong>%s</strong> will not receive any email from ' \
                  '%s.' % (name, groupName)
         m += ' '
         if deliveryMethod != 'web':
             # reset the specific addresses
-            specificAddresses = user.get_specificEmailAddressesByKey(groupId)
-            for address in specificAddresses:
-                user.remove_deliveryEmailAddressByKey(groupId, address)
-
             if defaultOrSpecific == 'specific' and emailAddresses:
                 m += 'Email will be delivered to:\n<ul>'
                 for address in emailAddresses:
-                    user.add_deliveryEmailAddressByKey(groupId, address)
+                    self.groupEmailUser.add_specific_address(address)
                     m += '<li><code class="email">%s</code></li>' % address
                 m += '</ul>\n'
             else:
-                emailUser = EmailUser(self.context, self.userInfo)
-                address = emailUser.get_delivery_addresses()[0]
-                m += 'Email will be delivered to the default address, which '\
-                    'is: <code class="email">%s</code>' % address
+                addrs = ['<code class="email">{0}</code>'.format(a) for a in
+                        self.groupEmailUser.get_preferred_email_addresses()]
+                plural = 'address' if len(addrs) == 1 else 'addresses'
+                m += 'Email will be delivered to the default {0}, which '\
+                    'is: {1}'.format(plural, comma_comma_and(addrs))
         self.status = m
 
     def handle_change_action_failure(self, action, data, errors):
