@@ -1,4 +1,18 @@
 # -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2010, 2011, 2012, 2013, 2014 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+from __future__ import absolute_import, unicode_literals
 from zope.cachedescriptors.property import Lazy
 from zope.component import createObject
 from zope.formlib import form
@@ -10,11 +24,11 @@ from gs.content.form import radio_widget, multi_check_box_widget
 from gs.group.base import GroupForm
 from gs.group.member.base.utils import user_member_of_group
 from gs.profile.email.base.emailuser import EmailUser
-from interfaces import IGSGroupEmailSettings
+from .interfaces import IGSGroupEmailSettings
 
 
 class GroupEmailSettingsForm(GroupForm):
-    label = u'Email Settings'
+    label = 'Email Settings'
     pageTemplateFileName = 'browser/templates/groupemailsettings.pt'
     template = ZopeTwoPageTemplateFile(pageTemplateFileName)
     form_fields = form.Fields(IGSGroupEmailSettings, render_context=True)
@@ -86,7 +100,7 @@ class GroupEmailSettingsForm(GroupForm):
             retval = self.loggedInUser
         return retval
 
-    @form.action(label=u'Change', failure='handle_change_action_failure')
+    @form.action(label='Change', failure='handle_change_action_failure')
     def handle_change(self, action, data):
         deliveryMethod = data['delivery']
         defaultOrSpecific = data['default_or_specific']
@@ -103,29 +117,29 @@ class GroupEmailSettingsForm(GroupForm):
         groupId = self.groupInfo.id
         user = self.userInfo.user
         if self.is_editing_self:
-            name = u'<a href="%s">You</a>' % self.userInfo.url
+            name = '<a href="%s">You</a>' % self.userInfo.url
         else:
-            name = u'<a href="%s">%s</a>' % (self.userInfo.url,
+            name = '<a href="%s">%s</a>' % (self.userInfo.url,
                                              self.userInfo.name)
 
-        groupName = u'<a href="%s">%s</a>' % (self.groupInfo.relativeURL,
+        groupName = '<a href="%s">%s</a>' % (self.groupInfo.relativeURL,
                                               self.groupInfo.name)
 
-        m = u""
+        m = ""
         # enable delivery to clear the delivery settings
         user.set_enableDeliveryByKey(groupId)
         if deliveryMethod == 'email':
-            m += u'<strong>%s</strong> will receive an email message '\
-                u'every time someone posts to %s.' % (name, groupName)
+            m += '<strong>%s</strong> will receive an email message '\
+                'every time someone posts to %s.' % (name, groupName)
         elif deliveryMethod == 'digest':
             user.set_enableDigestByKey(groupId)
-            m += u'<strong>%s</strong> will receive a daily digest of '\
-                u'topics posted to %s.' % (name, groupName)
+            m += '<strong>%s</strong> will receive a daily digest of '\
+                'topics posted to %s.' % (name, groupName)
         elif deliveryMethod == 'web':
             user.set_disableDeliveryByKey(groupId)
-            m += u'<strong>%s</strong> will not receive any email from ' \
-                 u'%s.' % (name, groupName)
-        m += u' '
+            m += '<strong>%s</strong> will not receive any email from ' \
+                 '%s.' % (name, groupName)
+        m += ' '
         if deliveryMethod != 'web':
             # reset the specific addresses
             specificAddresses = user.get_specificEmailAddressesByKey(groupId)
@@ -133,22 +147,20 @@ class GroupEmailSettingsForm(GroupForm):
                 user.remove_deliveryEmailAddressByKey(groupId, address)
 
             if defaultOrSpecific == 'specific' and emailAddresses:
-                m += u'Email will be delivered to:\n<ul>'
+                m += 'Email will be delivered to:\n<ul>'
                 for address in emailAddresses:
                     user.add_deliveryEmailAddressByKey(groupId, address)
-                    m += u'<li><code class="email">%s</code></li>' % address
-                m += u'</ul>\n'
+                    m += '<li><code class="email">%s</code></li>' % address
+                m += '</ul>\n'
             else:
                 emailUser = EmailUser(self.context, self.userInfo)
                 address = emailUser.get_delivery_addresses()[0]
-                m += u'Email will be delivered to the default address, which '\
-                    u'is: <code class="email">%s</code>' % address
+                m += 'Email will be delivered to the default address, which '\
+                    'is: <code class="email">%s</code>' % address
         self.status = m
-
-        assert type(self.status) == unicode
 
     def handle_change_action_failure(self, action, data, errors):
         if len(errors) == 1:
-            self.status = u'<p>There is an error:</p>'
+            self.status = '<p>There is an error:</p>'
         else:
-            self.status = u'<p>There are errors:</p>'
+            self.status = '<p>There are errors:</p>'

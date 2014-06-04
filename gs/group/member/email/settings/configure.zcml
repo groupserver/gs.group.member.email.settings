@@ -11,7 +11,7 @@
 
   <utility
     name="DefaultOrSpecificEmailVocab"
-    component="gs.group.member.email.vocabulary.DefaultOrSpecificEmailVocab"
+    component=".vocabulary.DefaultOrSpecificEmailVocab"
     provides="zope.schema.interfaces.IVocabularyFactory" />
 
   <browser:resource

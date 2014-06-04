@@ -1,4 +1,18 @@
 # -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright © 2010, 2011, 2012, 2013, 2014 OnlineGroups.net and Contributors.
+# All Rights Reserved.
+#
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
+#
+##############################################################################
+from __future__ import absolute_import, unicode_literals
 from zope.component import createObject
 from zope.interface import implements
 from zope.interface.common.mapping import IEnumerableMapping
@@ -22,16 +36,16 @@ class DefaultOrSpecificEmailVocab(object):
 
         emailUser = EmailUser(self.userInfo.user, self.userInfo)
         defaultAddresses = emailUser.get_delivery_addresses()
-        self.defaultAddress = u''
+        self.defaultAddress = ''
         if defaultAddresses:
             self.defaultAddress = defaultAddresses[0]
 
     def __iter__(self):
         """See zope.schema.interfaces.IIterableVocabulary"""
-        retval = [SimpleTerm('default', 'default', u'Default (%s)' %
+        retval = [SimpleTerm('default', 'default', 'Default (%s)' %
                                 self.defaultAddress),
                    SimpleTerm('specific', 'specific',
-                               u'Specific Address or Addresses'),
+                               'Specific Address or Addresses'),
                  ]
         return iter(retval)
 
@@ -60,10 +74,10 @@ class DefaultOrSpecificEmailVocab(object):
         retval = None
         if token == 'default':
             retval = SimpleTerm('default', 'default',
-                                u'Default (%s)' % self.defaultAddress)
+                                'Default (%s)' % self.defaultAddress)
         elif token == 'specific':
             retval = SimpleTerm('specific', 'specific',
-                                    u'Specific Address or Addresses')
+                                    'Specific Address or Addresses')
         if retval:
             return retval
         raise LookupError(token)
