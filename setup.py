@@ -5,7 +5,7 @@ from version import get_version
 
 version = get_version()
 
-setup(name='gs.group.member.email',
+setup(name='gs.group.member.email.settings',
     version=version,
     description="The pages to allow the editing of group related email details",
     long_description=open("README.txt").read() + "\n" +
@@ -27,7 +27,8 @@ setup(name='gs.group.member.email',
     url='http://groupserver.org',
     license='ZPL 2.1',
     packages=find_packages(exclude=['ez_setup']),
-    namespace_packages=['gs', 'gs.group', 'gs.group.member'],
+    namespace_packages=['gs', 'gs.group', 'gs.group.member', 
+                        'gs.group.member.email'],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
