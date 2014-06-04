@@ -56,9 +56,9 @@
         </p>
         <p id="introduction" tal:condition="not:view/is_editing_self">
           This page is used to change how
-          <strong tal:content="view/userInfo/name"/> 
-          is notified of messages that are posted to from the group 
-          <strong tal:content="view/groupInfo/name"/>, and which email 
+          <strong tal:content="view/userInfo/name"/>
+          is notified of messages that are posted to from the group
+          <strong tal:content="view/groupInfo/name"/>, and which email
           addresses are used to notify them of messages sent to the group.
         </p>
         <tal:block define="widget python:[w for w in view.widgets][0]">
