@@ -1,16 +1,15 @@
+"use strict";
 // module for interlocks on the email settings form.
 jQuery.noConflict();
 
 function GSEmailSettingsInterlock() {
-    var allDestinationCheckboxes = null, 
-        allDefaultOrSpecificRadios = null, 
-        checkedDefaultOrSpecificRadios = null,
-        destinationWidget = null,
-        defaultOrSpecificWidget = null;
+    var allDestinationCheckboxes=null, allDefaultOrSpecificRadios=null, 
+        checkedDefaultOrSpecificRadios=null, destinationWidget=null,
+        defaultOrSpecificWidget=null;
 
     // Private methods
     function deliveryChange() {
-        var updatedWidget = null, v = null;
+        var updatedWidget=null, v=null;
 
         updatedWidget = jQuery(this);
 
@@ -32,7 +31,7 @@ function GSEmailSettingsInterlock() {
         }
     }
     function defaultOrSpecificChange() {
-        var updatedWidget = null, destinationWidget = null;
+        var updatedWidget=null, destinationWidget=null;
 
         updatedWidget = jQuery(this);
         destinationWidget = jQuery("#widget-form\\.destination");
@@ -61,7 +60,7 @@ function GSEmailSettingsInterlock() {
     // Public methods and properties
     return {
         init: function () {
-            var radios = null, checkedDeliveryRadios = null;
+            var radios=null, checkedDeliveryRadios=null;
 
             allDefaultOrSpecificRadios.change(defaultOrSpecificChange);
 
@@ -82,7 +81,7 @@ function GSEmailSettingsInterlock() {
 }
 
 jQuery(window).load( function () {
-    var i = null;
+    var i=null;
     i = GSEmailSettingsInterlock();
     i.init();    
 });
