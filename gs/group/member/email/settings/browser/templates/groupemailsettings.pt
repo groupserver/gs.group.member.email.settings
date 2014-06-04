@@ -77,7 +77,7 @@
       </form>
     </tal:block>
     <script metal:fill-slot="javascript" type="text/javascript"
-            src="/++resource++gs-group-member-email-20130603.js"
-            defer="true">&#160;</script>
+            src="/++resource++gs-group-member-email-settings-20140604.js"
+            defer="defer"> </script>
   </body>
 </html>
