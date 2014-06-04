@@ -16,14 +16,12 @@ from __future__ import absolute_import, unicode_literals
 from zope.cachedescriptors.property import Lazy
 from zope.component import createObject, getMultiAdapter
 from zope.formlib import form
-from zope.interface import alsoProvides
-from zope.security import checkPermission
+import zope.security.management
 from zope.security.interfaces import Unauthorized
 from Products.Five.browser.pagetemplatefile import ZopeTwoPageTemplateFile
 from gs.content.form import radio_widget, multi_check_box_widget
 from gs.core import comma_comma_and
 from gs.group.base import GroupForm
-from gs.group.member.base.utils import user_member_of_group
 from gs.group.member.email.base.interfaces import IGroupEmailUser
 from gs.group.member.email.base import GroupEmailSetting
 from .interfaces import IGSGroupEmailSettings
@@ -33,7 +31,7 @@ class GroupEmailSettingsForm(GroupForm):
     label = 'Email Settings'
     pageTemplateFileName = 'browser/templates/groupemailsettings.pt'
     template = ZopeTwoPageTemplateFile(pageTemplateFileName)
-    form_fields = form.Fields(IGSGroupEmailSettings, render_context=True)
+    form_fields = form.Fields(IGSGroupEmailSettings, render_context=False)
 
     def __init__(self, group, request):
         super(GroupEmailSettingsForm, self).__init__(group, request)
@@ -42,12 +40,6 @@ class GroupEmailSettingsForm(GroupForm):
         self.form_fields['destination'].custom_widget = multi_check_box_widget
 
     def setUpWidgets(self, ignore_request=True):
-        groupId = self.groupInfo.id
-        # further sanity/security check
-        if not user_member_of_group(self.userInfo, self.context):
-            m = "User {0} was not a member of the group {1}"
-            msg = m.format(self.userInfo.id, groupId)
-            raise Unauthorized(msg)
         specificEmailAddresses = \
                             self.groupEmailUser.get_specific_email_addresses()
         deliverySetting = self.groupEmailUser.get_delivery_setting()
@@ -65,7 +57,7 @@ class GroupEmailSettingsForm(GroupForm):
                         'delivery': delivery,
                         'userId': self.userInfo.id}
 
-        alsoProvides(self.userInfo, IGSGroupEmailSettings)
+        #alsoProvides(self.userInfo, IGSGroupEmailSettings)
         self.widgets = form.setUpWidgets(
             self.form_fields, self.prefix, self.userInfo, self.request,
             data=default_data,
@@ -89,8 +81,14 @@ class GroupEmailSettingsForm(GroupForm):
     def userInfo(self):
         userId = self.request.get('userId') or self.request.get('form.userId')
         if userId:
-            user = getattr(self.context.contacts, userId)
-            if not checkPermission("zope2.ManageProperties", user):
+            user = self.context.acl_users.getUser(userId)
+            # --=mpj17=-- Ask me no questions…
+            interaction = zope.security.management.queryInteraction()
+            if interaction is None:
+                zope.security.management.newInteraction()
+            # --=mpj17=-- …I tell you no lies.
+            if not zope.security.management.checkPermission(
+                                            "zope2.ManageProperties", user):
                 m = "Not authorized to manage the settings of user {0}."
                 msg = m.format(userId)
                 raise Unauthorized(msg)
@@ -103,7 +101,7 @@ class GroupEmailSettingsForm(GroupForm):
     @Lazy
     def groupEmailUser(self):
         retval = getMultiAdapter((self.userInfo, self.groupInfo),
-                                    IGroupEmailUser)
+                                    IGroupEmailUser, context=self.context)
         return retval
 
     @form.action(label='Change', failure='handle_change_action_failure')
@@ -156,8 +154,9 @@ class GroupEmailSettingsForm(GroupForm):
                 addrs = ['<code class="email">{0}</code>'.format(a) for a in
                         self.groupEmailUser.get_preferred_email_addresses()]
                 plural = 'address' if len(addrs) == 1 else 'addresses'
+                isAre = 'is' if len(addrs) == 1 else 'are'
                 m += 'Email will be delivered to the default {0}, which '\
-                    'is: {1}'.format(plural, comma_comma_and(addrs))
+                    '{1} {2}'.format(plural, isAre, comma_comma_and(addrs))
         self.status = m
 
     def handle_change_action_failure(self, action, data, errors):
