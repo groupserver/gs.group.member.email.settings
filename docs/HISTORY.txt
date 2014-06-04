@@ -11,7 +11,7 @@ Changelog
 2.0.0 (2013-06-03)
 ------------------
 
-* Recactor of the code for PEP-8.
+* Refactor of the code for PEP-8.
 * Updated the page for the new UI.
 * Restyled the JavaScript.
 
@@ -24,7 +24,7 @@ Changelog
 1.1.1 (2011-01-26)
 ------------------
 
-* Refactored for ``gs.profile.email.base``.
+* Refactor for ``gs.profile.email.base``.
 
 1.1.0 (2010-12-09)
 ------------------
