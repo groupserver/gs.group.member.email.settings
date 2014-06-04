@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <configure xmlns="http://namespaces.zope.org/zope"
-  xmlns:browser="http://namespaces.zope.org/browser"
-  xmlns:five="http://namespaces.zope.org/five"
-  i18n_domain="groupserver">
-  
-  <browser:page 
+           xmlns:browser="http://namespaces.zope.org/browser"
+           i18n_domain="groupserver">
+
+  <browser:page
     name="email_settings.html"
     for="gs.group.base.interfaces.IGSGroupMarker"
     class=".emailsettings.GroupEmailSettingsForm"
     permission="zope2.View"/>
-  
+
   <utility
     name="DefaultOrSpecificEmailVocab"
     component="gs.group.member.email.vocabulary.DefaultOrSpecificEmailVocab"
     provides="zope.schema.interfaces.IVocabularyFactory" />
 
-  <browser:resource 
+  <browser:resource
     name="gs-group-member-email-20130603.js"
     file="browser/javascript/emailsettings_interlock.js"
     permission="zope.Public" />
