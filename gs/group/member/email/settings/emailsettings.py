@@ -19,7 +19,7 @@ from zope.formlib import form
 import zope.security.management
 from zope.security.interfaces import Unauthorized
 from Products.Five.browser.pagetemplatefile import ZopeTwoPageTemplateFile
-from gs.content.form import radio_widget, multi_check_box_widget
+from gs.content.form.base import (radio_widget, multi_check_box_widget)
 from gs.core import comma_comma_and
 from gs.group.base import GroupForm
 from gs.group.member.email.base.interfaces import IGroupEmailUser
