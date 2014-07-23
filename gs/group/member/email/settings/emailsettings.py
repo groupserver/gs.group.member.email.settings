@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-##############################################################################
+############################################################################
 #
-# Copyright © 2010, 2011, 2012, 2013, 2014 OnlineGroups.net and Contributors.
+# Copyright © 2010, 2011, 2012, 2013, 2014 OnlineGroups.net and
+# Contributors.
+#
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
@@ -11,7 +13,7 @@
 # WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
 # FOR A PARTICULAR PURPOSE.
 #
-##############################################################################
+############################################################################
 from __future__ import absolute_import, unicode_literals
 from zope.cachedescriptors.property import Lazy
 from zope.component import createObject, getMultiAdapter
@@ -37,11 +39,12 @@ class GroupEmailSettingsForm(GroupForm):
         super(GroupEmailSettingsForm, self).__init__(group, request)
         self.form_fields['delivery'].custom_widget = radio_widget
         self.form_fields['default_or_specific'].custom_widget = radio_widget
-        self.form_fields['destination'].custom_widget = multi_check_box_widget
+        self.form_fields['destination'].custom_widget = \
+            multi_check_box_widget
 
     def setUpWidgets(self, ignore_request=True):
         specificEmailAddresses = \
-                            self.groupEmailUser.get_specific_email_addresses()
+            self.groupEmailUser.get_specific_email_addresses()
         deliverySetting = self.groupEmailUser.get_delivery_setting()
         delivery = 'email'
         default_or_specific = 'default'
@@ -67,7 +70,8 @@ class GroupEmailSettingsForm(GroupForm):
     def is_editing_self(self):
         """ Check to see if we are editing ourselves, or another user."""
         me = self.loggedInUser
-        userId = self.request.get('userId') or self.request.get('form.userId')
+        userId = self.request.get('userId') \
+            or self.request.get('form.userId')
 
         editing_self = True
         # editing_self = (userId is not None) and (me.userId == userId)
@@ -79,7 +83,8 @@ class GroupEmailSettingsForm(GroupForm):
 
     @Lazy
     def userInfo(self):
-        userId = self.request.get('userId') or self.request.get('form.userId')
+        userId = self.request.get('userId') \
+            or self.request.get('form.userId')
         if userId:
             user = self.context.acl_users.getUser(userId)
             # --=mpj17=-- Ask me no questions…
@@ -88,12 +93,12 @@ class GroupEmailSettingsForm(GroupForm):
                 zope.security.management.newInteraction()
             # --=mpj17=-- …I tell you no lies.
             if not zope.security.management.checkPermission(
-                                            "zope2.ManageProperties", user):
+                    "zope2.ManageProperties", user):
                 m = "Not authorized to manage the settings of user {0}."
                 msg = m.format(userId)
                 raise Unauthorized(msg)
             retval = createObject('groupserver.UserFromId', self.context,
-                                    userId)
+                                  userId)
         else:
             retval = self.loggedInUser
         return retval
@@ -101,7 +106,7 @@ class GroupEmailSettingsForm(GroupForm):
     @Lazy
     def groupEmailUser(self):
         retval = getMultiAdapter((self.userInfo, self.groupInfo),
-                                    IGroupEmailUser, context=self.context)
+                                 IGroupEmailUser, context=self.context)
         return retval
 
     @form.action(label='Change', failure='handle_change_action_failure')
@@ -114,7 +119,8 @@ class GroupEmailSettingsForm(GroupForm):
             "Unexpected delivery option %s" % deliveryMethod
         if deliveryMethod != 'web':
             if defaultOrSpecific not in ('default', 'specific'):
-                errMsg = "Unexpected defaultOrSpecific %s" % defaultOrSpecific
+                em = "Unexpected defaultOrSpecific %s"
+                errMsg = em % defaultOrSpecific
                 raise ValueError(errMsg)
             if not(isinstance(emailAddresses, list)):
                 errM = "destination addresses {0} are not in a list"
@@ -125,9 +131,9 @@ class GroupEmailSettingsForm(GroupForm):
             name = '<a href="%s">You</a>' % self.userInfo.url
         else:
             name = '<a href="%s">%s</a>' % (self.userInfo.url,
-                                             self.userInfo.name)
+                                            self.userInfo.name)
         groupName = '<a href="%s">%s</a>' % (self.groupInfo.relativeURL,
-                                              self.groupInfo.name)
+                                             self.groupInfo.name)
         m = ""
         self.groupEmailUser.set_default_delivery()
         if deliveryMethod == 'email':
@@ -151,8 +157,9 @@ class GroupEmailSettingsForm(GroupForm):
                     m += '<li><code class="email">%s</code></li>' % address
                 m += '</ul>\n'
             else:
-                addrs = ['<code class="email">{0}</code>'.format(a) for a in
-                        self.groupEmailUser.get_preferred_email_addresses()]
+                pref = self.groupEmailUser.get_preferred_email_addresses()
+                addrs = ['<code class="email">{0}</code>'.format(a)
+                         for a in pref]
                 plural = 'address' if len(addrs) == 1 else 'addresses'
                 isAre = 'is' if len(addrs) == 1 else 'are'
                 m += 'Email will be delivered to the default {0}, which '\
