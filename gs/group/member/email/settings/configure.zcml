@@ -3,20 +3,26 @@
            xmlns:browser="http://namespaces.zope.org/browser"
            i18n_domain="groupserver">
 
+  <!-- The Email Settings page-->
   <browser:page
     name="email_settings.html"
     for="gs.group.base.interfaces.IGSGroupMarker"
     class=".emailsettings.GroupEmailSettingsForm"
     permission="zope2.View"/>
-
   <utility
     name="DefaultOrSpecificEmailVocab"
     component=".vocabulary.DefaultOrSpecificEmailVocab"
     provides="zope.schema.interfaces.IVocabularyFactory" />
-
   <browser:resource
     name="gs-group-member-email-settings-20140604.js"
     file="browser/javascript/emailsettings_interlock.js"
     permission="zope.Public" />
+
+  <!-- The "digest" email command -->
+  <adapter
+    name="digest"
+    for="gs.group.base.interfaces.IGSGroupMarker"
+    provides="gs.group.list.command.interfaces.IEmailCommand"
+    factory=".listcommand.DigestCommand" />
 
 </configure>
