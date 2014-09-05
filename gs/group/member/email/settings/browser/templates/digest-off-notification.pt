@@ -1,0 +1,51 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="context/@@groupserver_email_layout/page">
+  <head>
+    <title metal:fill-slot="title">
+      Digest off:
+      <tal:bock content="view/groupInfo/name">This Group</tal:bock>:
+      <tal:block content="view/siteInfo/name">Site</tal:block>
+    </title>
+  </head>
+  <body>
+    <div metal:fill-slot="body"
+         tal:define="userInfo options/userInfo | view/loggedInUserInfo;">
+      <h2>
+        One email per post from
+        <span tal:content="view/groupInfo/name">this group</span>
+      </h2>
+      <p>
+        Dear <span class="fn" tal:content="userInfo/name">member</span>,
+      </p>
+      <!-- Explain what has happened.-->
+      <!--   - Now on topic digest -->
+      <p>
+        You will now receive an email whenever someone posts to
+        <a class="group"
+           tal:attributes="href view/groupInfo/url"
+           tal:content="view/groupInfo/name">this group</a>.
+        To switch to the topic-digest &#8213; and get at most one
+        email each day &#8213; send
+      <a href="#" tal:attributes="href view/digestOn">an email
+          with the subject "digest on" to
+          <code tal:content="view/listAddress"
+                class="email">group@list.example.com</code>.</a>
+      </p>
+      <!--Troubleshooting/return/warranty/damage information-->
+      <p>
+        If you have any problems, email us at
+        <a tal:attributes="href python:view.get_support_email(userInfo);"
+           href="#"><code tal:content="view/siteInfo/get_support_email"/></a>.
+      </p>
+      <!--Website address-->
+      <p>
+        Kind regards,<br/>
+        <span>The
+        <span tal:content="view/siteInfo/name">Site</span>
+        Team</span>
+      </p>
+    </div>
+  </body>
+</html>

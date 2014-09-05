@@ -1,0 +1,60 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="context/@@groupserver_email_layout/page">
+  <head>
+    <title metal:fill-slot="title">
+      Digest on:
+      <tal:bock content="view/groupInfo/name">This Group</tal:bock>:
+      <tal:block content="view/siteInfo/name">Site</tal:block>
+    </title>
+  </head>
+  <body>
+    <div metal:fill-slot="body"
+         tal:define="userInfo options/userInfo | view/loggedInUserInfo;">
+      <h2>
+        Topic digests from
+        <span tal:content="view/groupInfo/name">this group</span>
+      </h2>
+      <p>
+        Dear <span class="fn" tal:content="userInfo/name">member</span>,
+      </p>
+      <!-- Explain what has happened.-->
+      <!--   - Now on topic digest -->
+      <p>
+        You will now receive a <em>digest</em> of
+        topics from
+        <a class="group"
+           tal:attributes="href view/groupInfo/url"
+           tal:content="view/groupInfo/name">this group</a>.
+        This digest will summarise what has been discussed in the
+        group, and link to the complete topics on the Web.
+        It will be sent to you once per day &#8213;
+        if there has been any activity in
+        <span class="group"
+              tal:content="view/groupInfo/name">this group</span>.
+      </p>
+      <!-- To go back -->
+      <p>
+        To turn off the digest, and get one email per post, send
+        <a href="#" tal:attributes="href view/digestOff">an email
+          with the subject "Digest off" to
+          <code tal:content="view/listAddress"
+                class="email">group@list.example.com</code>.</a>
+      </p>
+      <!--Troubleshooting/return/warranty/damage information-->
+      <p>
+        If you have any problems, email us at
+        <a tal:attributes="href python:view.get_support_email(userInfo);"
+           href="#"><code tal:content="view/siteInfo/get_support_email"/></a>.
+      </p>
+      <!--Website address-->
+      <p>
+        Kind regards,<br/>
+        <span>The
+        <span tal:content="view/siteInfo/name">Site</span>
+        Team</span>
+      </p>
+    </div>
+  </body>
+</html>
