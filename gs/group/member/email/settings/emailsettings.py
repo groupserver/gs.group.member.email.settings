@@ -26,6 +26,7 @@ from gs.core import comma_comma_and
 from gs.group.base import GroupForm
 from gs.group.member.email.base.interfaces import IGroupEmailUser
 from gs.group.member.email.base import GroupEmailSetting
+from .audit import (SettingsAuditor, DIGEST)
 from .interfaces import IGSGroupEmailSettings
 
 
@@ -136,11 +137,14 @@ class GroupEmailSettingsForm(GroupForm):
                                              self.groupInfo.name)
         m = ""
         self.groupEmailUser.set_default_delivery()
+        auditor = SettingsAuditor(self.context, self.userInfo,
+                                  self.loggedInUser, self.groupInfo)
         if deliveryMethod == 'email':
             m += '<strong>%s</strong> will receive an email message '\
                 'every time someone posts to %s.' % (name, groupName)
         elif deliveryMethod == 'digest':
             self.groupEmailUser.set_digest()
+            auditor.info(DIGEST)
             m += '<strong>%s</strong> will receive a daily digest of '\
                 'topics posted to %s.' % (name, groupName)
         elif deliveryMethod == 'web':

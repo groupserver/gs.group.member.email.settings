@@ -15,9 +15,11 @@
 from __future__ import absolute_import, unicode_literals
 from email.utils import parseaddr
 from zope.component import createObject, getMultiAdapter
+from zope.cachedescriptors.property import Lazy
 from gs.group.list.command import CommandResult, CommandABC
 from gs.group.member.base import user_member_of_group
 from gs.group.member.email.base.interfaces import IGroupEmailUser
+from .audit import (SettingsAuditor, DIGEST, DIGEST_COMMAND)
 from .notifier import (DigestOnNotifier, DigestOffNotifier)
 
 
@@ -32,14 +34,20 @@ class DigestCommand(CommandABC):
             raise ValueError(m)
 
         retval = CommandResult.notACommand
-        userInfo = self.get_userInfo(email)
+        addr = self.get_addr(email)
+        userInfo = self.get_userInfo(addr)
         if ((len(components) == 2) and (userInfo is not None)
            and user_member_of_group(userInfo, self.group)):
                 subcommand = components[1].lower()
                 if (subcommand in ('on', 'off')):
                     retval = CommandResult.commandStop
+                    auditor = SettingsAuditor(self.context, userInfo,
+                                              userInfo,  # Editing self
+                                              self.groupInfo)
                     if subcommand == 'on':
+                        auditor.info(DIGEST_COMMAND, addr)
                         self.digest_on(userInfo)
+                        auditor.info(DIGEST)
                         notifier = DigestOnNotifier(self.group, request)
                     else:  # 'off'
                         self.digest_off(userInfo)
@@ -56,11 +64,14 @@ class DigestCommand(CommandABC):
             'retval not a command result'
         return retval
 
-    def get_userInfo(self, email):
+    @staticmethod
+    def get_addr(email):
+        retval = parseaddr(email['From'])[1]
+        return retval
+
+    def get_userInfo(self, addr):
         'Get the userInfo from the ``From`` in the email message'
         retval = None
-
-        addr = parseaddr(email['From'])[1]
         sr = self.group.site_root()
         u = sr.acl_users.get_userByEmail(addr)
         if u:
@@ -68,9 +79,13 @@ class DigestCommand(CommandABC):
                                   u.getId())
         return retval
 
+    @Lazy
+    def groupInfo(self):
+        retval = createObject('groupserver.GroupInfo', self.group)
+        return retval
+
     def get_groupEmailUser(self, userInfo):
-        groupInfo = createObject('groupserver.GroupInfo', self.group)
-        retval = getMultiAdapter((userInfo, groupInfo),
+        retval = getMultiAdapter((userInfo, self.groupInfo),
                                  IGroupEmailUser, context=self.group)
         return retval
 

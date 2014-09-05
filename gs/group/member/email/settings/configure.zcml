@@ -50,4 +50,11 @@
     class=".notification.DigestOffTXT"
     template="browser/templates/digest-off-notification-txt.pt"
     permission="zope2.View"/>
+
+  <!-- Audit-event factory -->
+  <utility
+    factory=".audit.GroupEmailSettingsAuditEventFactory"
+    name="gs.group.member.email.settings"
+    permission="zope.Public" />
+
 </configure>

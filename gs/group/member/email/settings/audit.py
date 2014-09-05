@@ -151,7 +151,7 @@ class DigestCommand(BasicAuditEvent):
 
 class SettingsAuditor(object):
     """An Auditor for changing the settings"""
-    def __init__(self, context, userInfo, instanceUserInfo, groupInfo=None):
+    def __init__(self, context, userInfo, instanceUserInfo, groupInfo):
         """Create a leaving auditor."""
         self.context = context
         self.instanceUserInfo = instanceUserInfo
@@ -188,8 +188,7 @@ class SettingsAuditor(object):
         d = datetime.now(UTC)
         eventId = event_id_from_data(
             self.userInfo, self.instanceUserInfo, self.siteInfo, code,
-            instanceDatum, supplementaryDatum,
-            '%s-%s' % (self.groupInfo.name, self.groupInfo.id))
+            instanceDatum, supplementaryDatum)
 
         e = self.factory(self.context, eventId, code, d, self.userInfo,
                          self.instanceUserInfo, self.siteInfo,
