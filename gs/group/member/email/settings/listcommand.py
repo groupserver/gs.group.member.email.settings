@@ -30,11 +30,11 @@ class DigestCommand(CommandABC):
             raise ValueError(m)
 
         retval = CommandResult.notACommand
-        if ((len(components) == 2) and (components[1] == 'on')):
+        if ((len(components) == 2) and (components[1].lower() == 'on')):
             self.digest_on(email)
             # TODO: Send notification
             retval = CommandResult.commandStop
-        elif ((len(components) == 2) and (components[1] == 'off')):
+        elif ((len(components) == 2) and (components[1].lower() == 'off')):
             self.digest_off(email)
             # TODO: Send notification
             retval = CommandResult.commandStop
