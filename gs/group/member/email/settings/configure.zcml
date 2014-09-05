@@ -44,4 +44,10 @@
     class=".notification.DigestOffHTML"
     template="browser/templates/digest-off-notification.pt"
     permission="zope2.View"/>
+  <browser:page
+    name="gs-group-member-email-settings-digest-off.txt"
+    for="gs.group.base.interfaces.IGSGroupMarker"
+    class=".notification.DigestOffTXT"
+    template="browser/templates/digest-off-notification-txt.pt"
+    permission="zope2.View"/>
 </configure>
