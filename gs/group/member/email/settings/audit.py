@@ -21,6 +21,7 @@ from zope.cachedescriptors.property import Lazy
 from zope.component import createObject
 from zope.component.interfaces import IFactory
 from zope.interface import implementer, implementedBy
+from gs.core import comma_comma_and
 from Products.XWFCore.XWFUtils import munge_date
 from Products.CustomUserFolder.userinfo import userInfo_to_anchor
 from Products.GSGroup.groupInfo import groupInfo_to_anchor
@@ -69,6 +70,14 @@ class GroupEmailSettingsAuditEventFactory(object):
         elif (code == WEB_ONLY):
             event = WebOnlyEvent(context, event_id, date, userInfo,
                                  instanceUserInfo, siteInfo, groupInfo)
+        elif (code == ADDRESS_DEFAULT):
+            event = DefaultAddressesEvent(context, event_id, date, userInfo,
+                                          instanceUserInfo, siteInfo,
+                                          groupInfo)
+        elif (code == ADDRESS_SPECIFIC):
+            event = SpecificAddressesEvent(
+                context, event_id, date,  userInfo, instanceUserInfo,
+                siteInfo, groupInfo, instanceDatum)
         else:
             event = BasicAuditEvent(context, event_id, UNKNOWN, date,
                                     instanceUserInfo, instanceUserInfo,
@@ -94,7 +103,7 @@ class DigestEvent(BasicAuditEvent):
 
     @property
     def adminChanged(self):
-        return self.instanceUserInfo.id == self.userInfo.id
+        return self.instanceUserInfo.id != self.userInfo.id
 
     def __unicode__(self):
         if self.adminChanged:
@@ -175,7 +184,7 @@ per post mode.'''
 
     @property
     def adminChanged(self):
-        return self.instanceUserInfo.id == self.userInfo.id
+        return self.instanceUserInfo.id != self.userInfo.id
 
     def __unicode__(self):
         if self.adminChanged:
@@ -256,7 +265,7 @@ class WebOnlyEvent(BasicAuditEvent):
 
     @property
     def adminChanged(self):
-        return self.instanceUserInfo.id == self.userInfo.id
+        return self.instanceUserInfo.id != self.userInfo.id
 
     def __unicode__(self):
         if self.adminChanged:
@@ -281,6 +290,113 @@ class WebOnlyEvent(BasicAuditEvent):
                    % self.code
         r = '<span class="{0}">Switched to web-only mode in {1}'
         retval = r.format(cssClass, groupInfo_to_anchor(self.groupInfo))
+        if self.adminChanged:
+            uu = userInfo_to_anchor(self.userInfo)
+            retval = '{0} by {1}'.format(retval, uu)
+        d = munge_date(self.context, self.date)
+        retval = '{0}</span> ({1})'.format(retval, d)
+        return retval
+
+
+# Addresses
+@implementer(IAuditEvent)
+class DefaultAddressesEvent(BasicAuditEvent):
+    '''An audit-trail event representing a user switching to the default
+email addresses.'''
+
+    def __init__(self, context, eventId, d, userInfo, instanceUserInfo,
+                 siteInfo, groupInfo):
+        """Create an email event"""
+        super(DefaultAddressesEvent, self).__init__(
+            context, eventId,  ADDRESS_DEFAULT, d, userInfo,
+            instanceUserInfo, siteInfo, groupInfo, None, None,
+            SUBSYSTEM)
+
+    @property
+    def adminChanged(self):
+        return self.instanceUserInfo.id != self.userInfo.id
+
+    def __unicode__(self):
+        if self.adminChanged:
+            r = '{0} ({1}) has switched to the using the default '\
+                'addresses for {2} ({3}) on ({4} {5})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id)
+        else:
+            r = '{0} ({1}) has switched {2} ({3}) to use the default'\
+                'addresses for ({4} {5}) on ({6} {7})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.instanceUserInfo.name,
+                              self.instanceUserInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id)
+        return retval
+
+    @property
+    def xhtml(self):
+        cssClass = 'audit-event groupserver-group-member-email-settings-%s'\
+                   % self.code
+        r = '<span class="{0}">Switched to use the default addresses in '\
+            '{1}'
+        retval = r.format(cssClass, groupInfo_to_anchor(self.groupInfo))
+        if self.adminChanged:
+            uu = userInfo_to_anchor(self.userInfo)
+            retval = '{0} by {1}'.format(retval, uu)
+        d = munge_date(self.context, self.date)
+        retval = '{0}</span> ({1})'.format(retval, d)
+        return retval
+
+
+@implementer(IAuditEvent)
+class SpecificAddressesEvent(BasicAuditEvent):
+    '''An audit-trail event representing a user switching to specific email
+addresses.'''
+
+    def __init__(self, context, eventId, d, userInfo, instanceUserInfo,
+                 siteInfo, groupInfo, addresses):
+        """Create an email event"""
+        super(SpecificAddressesEvent, self).__init__(
+            context, eventId,  ADDRESS_SPECIFIC, d, userInfo,
+            instanceUserInfo, siteInfo, groupInfo, addresses, None,
+            SUBSYSTEM)
+
+    @property
+    def adminChanged(self):
+        return self.instanceUserInfo.id != self.userInfo.id
+
+    def __unicode__(self):
+        addrs = self.instanceDatum.split()
+        addrStr = comma_comma_and(addrs)
+        if self.adminChanged:
+            r = '{0} ({1}) has switched to the specific email addresses '\
+                '{6} for {2} ({3}) on ({4} {5})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id,
+                              addrStr)
+        else:
+            r = '{0} ({1}) has switched {2} ({3}) to use the specific'\
+                'addresses {8} for ({4} {5}) on ({6} {7})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.instanceUserInfo.name,
+                              self.instanceUserInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id,
+                              addrStr)
+        return retval
+
+    @property
+    def xhtml(self):
+        cssClass = 'audit-event groupserver-group-member-email-settings-%s'\
+                   % self.code
+        addrs = ['<code class="email">{0}</code>'.format(a) for a in
+                 self.instanceDatum.split()]
+        addrStr = comma_comma_and(addrs)
+        r = '<span class="{0}">Switched to use the email addresses {1} in '\
+            '{2}'
+        retval = r.format(cssClass, addrStr,
+                          groupInfo_to_anchor(self.groupInfo))
         if self.adminChanged:
             uu = userInfo_to_anchor(self.userInfo)
             retval = '{0} by {1}'.format(retval, uu)

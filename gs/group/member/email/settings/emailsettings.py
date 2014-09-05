@@ -26,7 +26,8 @@ from gs.core import comma_comma_and
 from gs.group.base import GroupForm
 from gs.group.member.email.base.interfaces import IGroupEmailUser
 from gs.group.member.email.base import GroupEmailSetting
-from .audit import (SettingsAuditor, DIGEST, EMAIL, WEB_ONLY)
+from .audit import (SettingsAuditor, DIGEST, EMAIL, WEB_ONLY,
+                    ADDRESS_DEFAULT, ADDRESS_SPECIFIC)
 from .interfaces import IGSGroupEmailSettings
 
 
@@ -162,6 +163,7 @@ class GroupEmailSettingsForm(GroupForm):
                     self.groupEmailUser.add_specific_address(address)
                     m += '<li><code class="email">%s</code></li>' % address
                 m += '</ul>\n'
+                auditor.info(ADDRESS_SPECIFIC, ' '.join(emailAddresses))
             else:
                 pref = self.groupEmailUser.get_preferred_email_addresses()
                 addrs = ['<code class="email">{0}</code>'.format(a)
@@ -170,6 +172,7 @@ class GroupEmailSettingsForm(GroupForm):
                 isAre = 'is' if len(addrs) == 1 else 'are'
                 m += 'Email will be delivered to the default {0}, which '\
                     '{1} {2}'.format(plural, isAre, comma_comma_and(addrs))
+                auditor.info(ADDRESS_DEFAULT)
         self.status = m
 
     def handle_change_action_failure(self, action, data, errors):
