@@ -97,7 +97,7 @@ class DigestOffHTML(DigestOnHTML):
 class DigestOffTXT(DigestOffHTML, TextMixin):
 
     def __init__(self, group, request):
-        super(DigestOnTXT, self).__init__(group, request)
+        super(DigestOffTXT, self).__init__(group, request)
         filename = 'digest-off-{0}-{1}.txt'.format(self.siteInfo.id,
                                                    self.groupInfo.id)
         self.set_header(filename)
