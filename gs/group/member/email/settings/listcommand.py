@@ -16,7 +16,9 @@ from __future__ import absolute_import, unicode_literals
 from email.utils import parseaddr
 from zope.component import createObject, getMultiAdapter
 from gs.group.list.command import CommandResult, CommandABC
+from gs.group.member.base import user_member_of_group
 from gs.group.member.email.base.interfaces import IGroupEmailUser
+from .notifier import (DigestOnNotifier, DigestOffNotifier)
 
 
 class DigestCommand(CommandABC):
@@ -30,41 +32,58 @@ class DigestCommand(CommandABC):
             raise ValueError(m)
 
         retval = CommandResult.notACommand
-        if ((len(components) == 2) and (components[1].lower() == 'on')):
-            self.digest_on(email)
-            # TODO: Send notification
-            retval = CommandResult.commandStop
-        elif ((len(components) == 2) and (components[1].lower() == 'off')):
-            self.digest_off(email)
-            # TODO: Send notification
-            retval = CommandResult.commandStop
-
+        userInfo = self.get_userInfo(email)
+        if ((len(components) == 2) and (userInfo is not None)
+           and user_member_of_group(userInfo, self.group)):
+                subcommand = components[1].lower()
+                if (subcommand in ('on', 'off')):
+                    retval = CommandResult.commandStop
+                    if subcommand == 'on':
+                        self.digest_on(userInfo)
+                        notifier = DigestOnNotifier(self.group, request)
+                    else:  # 'off'
+                        self.digest_off(userInfo)
+                        notifier = DigestOffNotifier(self.group, request)
+                    assert notifier, 'notifier not set.'
+                    notifier.notify(userInfo)
+        # --=mpj17=-- If there is no extra parameter to "digest", or there
+        # is no user for the From address in the email, or the user lacks
+        # group membership then the message will be treated as a *normal*
+        # *email*. This will almost certainly result in a "Not a member"
+        # email going out, unless self.group is a support group. Confused?
+        # Welcome to reality.
+        assert isinstance(retval, CommandResult), \
+            'retval not a command result'
         return retval
 
-    def digest_on(self, email):
-        'Turn the digest on for the sender of the command'
-        geu = self.get_groupEmailUser(email)
-        if geu:
-            # TODO: Log here
-            geu.set_digest()
-
-    def digest_off(self, email):
-        'Turn the digest on for the sender of the command'
-        geu = self.get_groupEmailUser(email)
-        if geu:
-            # TODO: Log here
-            geu.set_default_delivery()
-
-    def get_groupEmailUser(self, email):
+    def get_userInfo(self, email):
+        'Get the userInfo from the ``From`` in the email message'
         retval = None
 
         addr = parseaddr(email['From'])[1]
         sr = self.group.site_root()
         u = sr.acl_users.get_userByEmail(addr)
         if u:
-            userInfo = createObject('groupserver.UserFromId', self.group,
-                                    u.getId())
-            groupInfo = createObject('groupserver.GroupInfo', self.group)
-            retval = getMultiAdapter((userInfo, groupInfo),
-                                     IGroupEmailUser, context=self.group)
+            retval = createObject('groupserver.UserFromId', self.group,
+                                  u.getId())
         return retval
+
+    def get_groupEmailUser(self, userInfo):
+        groupInfo = createObject('groupserver.GroupInfo', self.group)
+        retval = getMultiAdapter((userInfo, groupInfo),
+                                 IGroupEmailUser, context=self.group)
+        return retval
+
+    def digest_on(self, userInfo):
+        'Turn the digest on for the sender of the command'
+        geu = self.get_groupEmailUser(userInfo)
+        if geu:
+            # TODO: Audit here
+            geu.set_digest()
+
+    def digest_off(self, userInfo):
+        'Turn the digest on for the sender of the command'
+        geu = self.get_groupEmailUser(userInfo)
+        if geu:
+            # TODO: Audit here
+            geu.set_default_delivery()

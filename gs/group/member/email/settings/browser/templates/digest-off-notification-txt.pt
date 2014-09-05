@@ -2,7 +2,7 @@
            tal:define="userInfo options/userInfo | view/loggedInUserInfo;">Dear <tal:block content="userInfo/name">Member</tal:block>,
 
 <tal:block
-  define="m string:You will now receive an email whenever someone posts to ${view/groupInfo/name}. To switch to the topic-digest, and get at most one email each day, send an email with the subject 'digest on' (not including the quotes) to"
+  define="m string:You will now receive an email whenever someone posts to ${view/groupInfo/name}. To switch to the topic digest, and get at most one email each day, send an email with the subject 'digest on' (not including the quotes) to"
   content="python:view.fill(m)" />
   <tal:block content="view/listAddress">group@lists.example.com</tal:block>
 
