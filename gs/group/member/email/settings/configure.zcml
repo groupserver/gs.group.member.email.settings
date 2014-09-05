@@ -31,12 +31,12 @@
     class=".notification.DigestOnHTML"
     template="browser/templates/digest-on-notification.pt"
     permission="zope2.View"/>
-  <!--browser:page
+  <browser:page
     name="gs-group-member-email-settings-digest-on.txt"
     for="gs.group.base.interfaces.IGSGroupMarker"
     class=".notification.DigestOnTXT"
     template="browser/templates/digest-on-notification-txt.pt"
-    permission="zope2.View"/-->
+    permission="zope2.View"/>
   <!-- The Digest Off notification -->
   <browser:page
     name="gs-group-member-email-settings-digest-off.html"

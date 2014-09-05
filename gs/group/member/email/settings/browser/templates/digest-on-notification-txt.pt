@@ -1,0 +1,29 @@
+<tal:block xmlns:tal="http://xml.zope.org/namespaces/tal"
+           tal:define="userInfo options/userInfo | view/loggedInUserInfo;">Dear <tal:block content="userInfo/name">Member</tal:block>,
+
+<tal:block
+  define="m string:You will now receive a digest of topics from ${view/groupInfo/name}. This digest will summarise what has been discussed in the group, and link to the complete topics on the Web. It will be sent to you once per day, if there has been any activity in ${view/groupInfo/name}."
+  content="python:view.fill(m)" />
+  <tal:block content="view/groupInfo/url">Group URL</tal:block>
+
+To turn off the digest, and get one email per post, send an email
+with the subject "digest off" (not including the quotes) to
+  <tal:block content="view/listAddress">group@lists.example.com</tal:block>
+
+If you have any problems, email us at
+  <tal:block content="view/siteInfo/get_support_email">this address</tal:block>
+
+Kind regards,
+  The <tal:block content="view/siteInfo/name">Site</tal:block> Team
+
+------------------------------------------------------------------------
+
+Privacy
+  <tal:block content="string:${view/siteInfo/url}/policies/privacy"/>
+
+Acceptable Use
+  <tal:block content="string:${view/siteInfo/url}/policies/aup"/>
+
+Terms of Service
+  <tal:block content="string:${view/siteInfo/url}/policies/tos"/>
+</tal:block>

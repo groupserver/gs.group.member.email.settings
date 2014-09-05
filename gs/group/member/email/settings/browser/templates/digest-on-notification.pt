@@ -38,7 +38,7 @@
       <p>
         To turn off the digest, and get one email per post, send
         <a href="#" tal:attributes="href view/digestOff">an email
-          with the subject "Digest off" to
+          with the subject "digest off" to
           <code tal:content="view/listAddress"
                 class="email">group@list.example.com</code>.</a>
       </p>
