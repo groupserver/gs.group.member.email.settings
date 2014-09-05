@@ -19,7 +19,8 @@ from zope.cachedescriptors.property import Lazy
 from gs.group.list.command import CommandResult, CommandABC
 from gs.group.member.base import user_member_of_group
 from gs.group.member.email.base.interfaces import IGroupEmailUser
-from .audit import (SettingsAuditor, DIGEST, DIGEST_COMMAND)
+from .audit import (SettingsAuditor, DIGEST, DIGEST_COMMAND, EMAIL,
+                    EMAIL_COMMAND)
 from .notifier import (DigestOnNotifier, DigestOffNotifier)
 
 
@@ -50,7 +51,9 @@ class DigestCommand(CommandABC):
                         auditor.info(DIGEST)
                         notifier = DigestOnNotifier(self.group, request)
                     else:  # 'off'
+                        auditor.info(EMAIL_COMMAND, addr)
                         self.digest_off(userInfo)
+                        auditor.info(EMAIL)
                         notifier = DigestOffNotifier(self.group, request)
                     assert notifier, 'notifier not set.'
                     notifier.notify(userInfo)

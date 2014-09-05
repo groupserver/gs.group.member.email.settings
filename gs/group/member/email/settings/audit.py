@@ -60,6 +60,15 @@ class GroupEmailSettingsAuditEventFactory(object):
         elif (code == DIGEST_COMMAND):
             event = DigestCommand(context, event_id, date, instanceUserInfo,
                                   groupInfo, siteInfo, instanceDatum)
+        elif (code == EMAIL):
+            event = EmailEvent(context, event_id, date, userInfo,
+                               instanceUserInfo, siteInfo, groupInfo)
+        elif (code == EMAIL_COMMAND):
+            event = EmailCommand(context, event_id, date, instanceUserInfo,
+                                 groupInfo, siteInfo, instanceDatum)
+        elif (code == WEB_ONLY):
+            event = WebOnlyEvent(context, event_id, date, userInfo,
+                                 instanceUserInfo, siteInfo, groupInfo)
         else:
             event = BasicAuditEvent(context, event_id, UNKNOWN, date,
                                     instanceUserInfo, instanceUserInfo,
@@ -114,7 +123,7 @@ class DigestEvent(BasicAuditEvent):
             uu = userInfo_to_anchor(self.userInfo)
             retval = '{0} by {1}'.format(retval, uu)
         d = munge_date(self.context, self.date)
-        retval = '{0} ({1})'.format(retval, d)
+        retval = '{0}</span> ({1})'.format(retval, d)
         return retval
 
 
@@ -147,6 +156,140 @@ class DigestCommand(BasicAuditEvent):
         retval = r.format(cssClass, groupInfo_to_anchor(self.groupInfo),
                           munge_date(self.context, self.date))
         return retval
+
+
+# One email per post
+
+
+@implementer(IAuditEvent)
+class EmailEvent(BasicAuditEvent):
+    ''' An audit-trail event representing a user switching to one email
+per post mode.'''
+
+    def __init__(self, context, id, d, userInfo, instanceUserInfo,
+                 siteInfo, groupInfo):
+        """Create an email event"""
+        super(EmailEvent, self).__init__(context, id, EMAIL, d, userInfo,
+                                         instanceUserInfo, siteInfo,
+                                         groupInfo, None, None, SUBSYSTEM)
+
+    @property
+    def adminChanged(self):
+        return self.instanceUserInfo.id == self.userInfo.id
+
+    def __unicode__(self):
+        if self.adminChanged:
+            r = '{0} ({1}) has switched to one-email-per-post mode for '\
+                '{2} ({3}) on ({4} {5})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id)
+        else:
+            r = '{0} ({1}) has switched {2} ({3}) to one-email-per-post '\
+                'mode for ({4} {5}) on ({6} {7})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.instanceUserInfo.name,
+                              self.instanceUserInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id)
+        return retval
+
+    @property
+    def xhtml(self):
+        cssClass = 'audit-event groupserver-group-member-email-settings-%s'\
+                   % self.code
+        r = '<span class="{0}">Switched to one-email-per-post mode in {1}'
+        retval = r.format(cssClass, groupInfo_to_anchor(self.groupInfo))
+        if self.adminChanged:
+            uu = userInfo_to_anchor(self.userInfo)
+            retval = '{0} by {1}'.format(retval, uu)
+        d = munge_date(self.context, self.date)
+        retval = '{0}</span> ({1})'.format(retval, d)
+        return retval
+
+
+@implementer(IAuditEvent)
+class EmailCommand(BasicAuditEvent):
+    'The audit-event for an one-email-per-post-command comming in.'
+
+    def __init__(self, context, eventId, d, instanceUserInfo, groupInfo,
+                 siteInfo, email):
+        super(EmailCommand, self).__init__(
+            context, eventId, EMAIL_COMMAND, d, instanceUserInfo,
+            instanceUserInfo, siteInfo, groupInfo, email, None, SUBSYSTEM)
+
+    def __unicode__(self):
+        r = 'Email-command to switch off digest mode for {0} '\
+            '({1}) on {2} ({3}) recieved for {4} ({5}) <{6}>.'
+        retval = r.format(
+            self.groupInfo.name, self.groupInfo.id,
+            self.siteInfo.name, self.siteInfo.id,
+            self.instanceUserInfo.name, self.instanceUserInfo.id,
+            self.instanceDatum)
+        return retval
+
+    @property
+    def xhtml(self):
+        cssClass = 'audit-event groupserver-group-member-email-settings-%s'\
+                   % self.code
+        r = '<span class="{0}">Sent an email in to switch off digest mode '\
+            'mode for {1}</span> ({2})'
+        retval = r.format(cssClass, groupInfo_to_anchor(self.groupInfo),
+                          munge_date(self.context, self.date))
+        return retval
+
+
+# Web only
+
+
+@implementer(IAuditEvent)
+class WebOnlyEvent(BasicAuditEvent):
+    'An audit-trail event representing a user switching to Web only mode.'
+
+    def __init__(self, context, id, d, userInfo, instanceUserInfo,
+                 siteInfo, groupInfo):
+        """Create an email event"""
+        super(WebOnlyEvent, self).__init__(context, id, WEB_ONLY, d,
+                                           userInfo, instanceUserInfo,
+                                           siteInfo, groupInfo, None, None,
+                                           SUBSYSTEM)
+
+    @property
+    def adminChanged(self):
+        return self.instanceUserInfo.id == self.userInfo.id
+
+    def __unicode__(self):
+        if self.adminChanged:
+            r = '{0} ({1}) has switched to Web-only mode for '\
+                '{2} ({3}) on ({4} {5})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id)
+        else:
+            r = '{0} ({1}) has switched {2} ({3}) to web-only'\
+                'mode for ({4} {5}) on ({6} {7})'
+            retval = r.format(self.userInfo.name, self.userInfo.id,
+                              self.instanceUserInfo.name,
+                              self.instanceUserInfo.id,
+                              self.groupInfo.name, self.groupInfo.id,
+                              self.siteInfo.name, self.siteInfo.id)
+        return retval
+
+    @property
+    def xhtml(self):
+        cssClass = 'audit-event groupserver-group-member-email-settings-%s'\
+                   % self.code
+        r = '<span class="{0}">Switched to web-only mode in {1}'
+        retval = r.format(cssClass, groupInfo_to_anchor(self.groupInfo))
+        if self.adminChanged:
+            uu = userInfo_to_anchor(self.userInfo)
+            retval = '{0} by {1}'.format(retval, uu)
+        d = munge_date(self.context, self.date)
+        retval = '{0}</span> ({1})'.format(retval, d)
+        return retval
+
+
+# Auditor
 
 
 class SettingsAuditor(object):
