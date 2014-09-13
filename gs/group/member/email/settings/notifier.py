@@ -13,63 +13,41 @@
 #
 ############################################################################
 from __future__ import unicode_literals
-from zope.cachedescriptors.property import Lazy
-from zope.component import createObject, getMultiAdapter
-from gs.core import to_ascii
+from zope.i18n import translate
+from gs.content.email.base import GroupNotifierABC
 from gs.profile.notify import MessageSender
-UTF8 = 'utf-8'
+from . import GSMessageFactory as _
 
 
-class DigestOnNotifier(object):
+class DigestOnNotifier(GroupNotifierABC):
     htmlTemplateName = 'gs-group-member-email-settings-digest-on.html'
     textTemplateName = 'gs-group-member-email-settings-digest-on.txt'
 
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-        h = self.request.response.getHeader('Content-Type')
-        self.oldContentType = to_ascii(h if h else 'text/html')
-
-    @Lazy
-    def groupInfo(self):
-        retval = createObject('groupserver.GroupInfo', self.context)
-        assert retval, 'Failed to create the GroupInfo from %s' % \
-            self.context
-        return retval
-
-    @Lazy
-    def htmlTemplate(self):
-        retval = getMultiAdapter((self.context, self.request),
-                                 name=self.htmlTemplateName)
-        return retval
-
-    @Lazy
-    def textTemplate(self):
-        retval = getMultiAdapter((self.context, self.request),
-                                 name=self.textTemplateName)
-        return retval
-
     def notify(self, userInfo):
-        sender = MessageSender(self.context, userInfo)
-        subject = 'Topic digests from {}'.format(self.groupInfo.name)
+        subject = _('digest-on-subject',
+                    'Topic digests from ${groupName}',
+                    mapping={'groupName': self.groupInfo.name})
+        translatedSubject = translate(subject)
         text = self.textTemplate()
         html = self.htmlTemplate()
-        sender.send_message(subject, text, html)
 
-        self.request.response.setHeader(to_ascii('Content-Type'),
-                                        to_ascii(self.oldContentType))
+        sender = MessageSender(self.context, userInfo)
+        sender.send_message(translatedSubject, text, html)
+        self.reset_content_type()
 
 
-class DigestOffNotifier(DigestOnNotifier):
+class DigestOffNotifier(GroupNotifierABC):
     htmlTemplateName = 'gs-group-member-email-settings-digest-off.html'
     textTemplateName = 'gs-group-member-email-settings-digest-off.txt'
 
     def notify(self, userInfo):
-        sender = MessageSender(self.context, userInfo)
-        subject = 'One email per post from {}'.format(self.groupInfo.name)
+        subject = _('digest-off-subject',
+                    'One email per post from ${groupName}',
+                    mapping={'groupName': self.groupInfo.name})
+        translatedSubject = translate(subject)
         text = self.textTemplate()
         html = self.htmlTemplate()
-        sender.send_message(subject, text, html)
 
-        self.request.response.setHeader(to_ascii('Content-Type'),
-                                        to_ascii(self.oldContentType))
+        sender = MessageSender(self.context, userInfo)
+        sender.send_message(translatedSubject, text, html)
+        self.reset_content_type()
