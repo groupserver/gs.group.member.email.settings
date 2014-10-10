@@ -1,6 +1,12 @@
 Changelog
 =========
 
+3.0.1 (2014-10-10)
+------------------
+
+* Pointing to GitHub as the primary code repository
+* Naming the reStructuredText files as such
+
 3.0.0 (2014-06-04)
 ------------------
 

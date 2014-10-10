@@ -1,6 +1,20 @@
 ==================================
 ``gs.group.member.email.settings``
 ==================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The Email Settings page for a group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:Author: `Michael JasonSmith`_
+:Contact: Michael JasonSmith <mpj17@onlinegroups.net>
+:Date: 2014-10-10
+:Organization: `GroupServer.org`_
+:Copyright: This document is licensed under a
+  `Creative Commons Attribution-Share Alike 4.0 International License`_
+  by `OnlineGroups.net`_.
+
+..  _Creative Commons Attribution-Share Alike 4.0 International License:
+    http://creativecommons.org/licenses/by-sa/4.0/
 
 Introduction
 ============
@@ -62,7 +76,7 @@ settings.
 Resources
 =========
 
-- Code repository: https://source.iopen.net/groupserver/gs.group.member.email.settings
+- Code repository: https://github.com/groupserver/gs.group.member.email.settings
 - Questions and comments to http://groupserver.org/groups/development
 - Report bugs at https://redmine.iopen.net/projects/groupserver
 
@@ -71,11 +85,10 @@ Resources
 .. _OnlineGroups.Net: https://onlinegroups.net
 .. _Michael JasonSmith: http://groupserver.org/p/mpj17
 .. _Richard Waid: http://groupserver.org/p/richard
-.. _Creative Commons Attribution-Share Alike 3.0 New Zealand License:
-   http://creativecommons.org/licenses/by-sa/3.0/nz/
+
 ..  [#digest] See ``gs.group.messages.topicsdigest`` for details
-              <https://source.iopen.net/groupserver/gs.group.messages.topicsdigest/>
+              <https://github.com/groupserver/gs.group.messages.topicsdigest/>
 
 .. [#settings] See ``gs.profile.email.settings`` for details
-               <https://source.iopen.net/groupserver/gs.profile.email.settings/>
+               <https://github.com/groupserver/gs.profile.email.settings/>
 
