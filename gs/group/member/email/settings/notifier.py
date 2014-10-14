@@ -28,8 +28,8 @@ class DigestOnNotifier(GroupNotifierABC):
                     'Topic digests from ${groupName}',
                     mapping={'groupName': self.groupInfo.name})
         translatedSubject = translate(subject)
-        text = self.textTemplate()
-        html = self.htmlTemplate()
+        text = self.textTemplate(userInfo=userInfo)
+        html = self.htmlTemplate(userInfo=userInfo)
 
         sender = MessageSender(self.context, userInfo)
         sender.send_message(translatedSubject, text, html)
@@ -45,8 +45,8 @@ class DigestOffNotifier(GroupNotifierABC):
                     'One email per post from ${groupName}',
                     mapping={'groupName': self.groupInfo.name})
         translatedSubject = translate(subject)
-        text = self.textTemplate()
-        html = self.htmlTemplate()
+        text = self.textTemplate(userInfo=userInfo)
+        html = self.htmlTemplate(userInfo=userInfo)
 
         sender = MessageSender(self.context, userInfo)
         sender.send_message(translatedSubject, text, html)
