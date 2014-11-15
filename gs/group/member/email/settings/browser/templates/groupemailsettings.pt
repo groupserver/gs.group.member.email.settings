@@ -1,7 +1,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
-  xmlns:tal="http://xml.zope.org/namespaces/tal"
-  xmlns:metal="http://xml.zope.org/namespaces/metal"
-  metal:use-macro="context/@@groupserver_layout/page">
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      i18n:domain="gs.group.member.email.settings"
+      metal:use-macro="context/@@groupserver_layout/page">
   <head>
     <title metal:fill-slot="title">
       <span tal:replace="string:${view/label}: ${view/groupInfo/name}: ${view/siteInfo/get_name}">
@@ -45,21 +47,30 @@
       define="errors view/errors; status view/status; widgets view/widgets"
       metal:fill-slot="messages">&#160;</tal:block>
     <tal:block metal:fill-slot="body">
-      <h1>Change Email Settings</h1>
+      <h1 i18n:translate="">Change email settings</h1>
       <form enctype="multipart/form-data"  method="post" action="."
-        tal:attributes="action request/URL" id="join">
-        <p id="introduction" tal:condition="view/is_editing_self">
-          This page is used to change how you are notified of messages that
-          are posted to <strong tal:content="view/groupInfo/name"/>, and which
-          email addresses are used to notify you of messages sent to this
-          group.
+            tal:attributes="action request/URL" id="join"
+            tal:condition="python:not(view.userInfo.anonymous) and not(view.loggedInUser.anonymous)">
+        <p id="introduction" tal:condition="view/is_editing_self"
+           i18n:translate="change-intro-self">
+          This page is used to change how you are notified of
+          messages that are posted to
+          <strong tal:content="view/groupInfo/name"
+                  i18n:name="groupName" />, and which
+          email addresses are used to notify you of messages sent
+          to this group.
         </p>
-        <p id="introduction" tal:condition="not:view/is_editing_self">
+        <p id="introduction" tal:condition="not:view/is_editing_self"
+           i18n:translate="change-intro-other">
           This page is used to change how
-          <strong tal:content="view/userInfo/name"/>
-          is notified of messages that are posted to from the group
-          <strong tal:content="view/groupInfo/name"/>, and which email
-          addresses are used to notify them of messages sent to the group.
+          <strong tal:content="view/userInfo/name"
+                  i18n:name="userName"/>
+          is notified of messages that are posted to from the
+          group
+          <strong tal:content="view/groupInfo/name"
+                 i18n:name="groupName"/>,
+          and which email addresses are used to notify them of
+          messages sent to the group.
         </p>
         <tal:block define="widget python:[w for w in view.widgets][0]">
           <span tal:replace="structure widget/hidden" />
@@ -75,6 +86,23 @@
           </tal:block>
         </div><!--buttons-->
       </form>
+      <p i18n:translate="change-login"
+         id="gs-group-member-email-settings-change-login"
+         tal:condition="view/loggedInUser/anonymous">
+        <a href="/login.html"
+           tal:attributes="href string:login.html?came_from=${view/groupInfo/relativeURL}/email_settings.html">Sign in</a>
+        to change your email settings.
+      </p>
+
+      <p i18n:translate="user-not-found"
+         id="gs-group-member-email-settings-change-nouser"
+         tal:condition="python:view.userInfo.anonymous and not(view.loggedInUser.anonymous)">
+        Failed to find a user for the ID
+        <code tal:content="view/userId"
+          i18n:name="userID">something</code>.
+        Please check the user identifier.
+      </p><!--gs-group-member-email-settings-change-nouser-->
+
     </tal:block>
     <script metal:fill-slot="javascript" type="text/javascript"
             src="/++resource++gs-group-member-email-settings-20140604.js"

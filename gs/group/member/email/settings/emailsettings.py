@@ -45,9 +45,14 @@ class GroupEmailSettingsForm(GroupForm):
             multi_check_box_widget
 
     def setUpWidgets(self, ignore_request=True):
-        specificEmailAddresses = \
-            self.groupEmailUser.get_specific_email_addresses()
-        deliverySetting = self.groupEmailUser.get_delivery_setting()
+        if self.loggedInUser.anonymous or self.userInfo.anonymous:
+            # --=mpj17=-- A tiny hack. These should never be shown.
+            specificEmailAddresses = ''
+            deliverySetting = GroupEmailSetting.webonly
+        else:
+            specificEmailAddresses = \
+                self.groupEmailUser.get_specific_email_addresses()
+            deliverySetting = self.groupEmailUser.get_delivery_setting()
         delivery = 'email'
         default_or_specific = 'default'
         if deliverySetting == GroupEmailSetting.webonly:
@@ -69,11 +74,16 @@ class GroupEmailSettingsForm(GroupForm):
             ignore_request=False)
 
     @property
+    def userId(self):
+        retval = self.request.get('userId') \
+            or self.request.get('form.userId')
+        return retval
+
+    @property
     def is_editing_self(self):
         """ Check to see if we are editing ourselves, or another user."""
         me = self.loggedInUser
-        userId = self.request.get('userId') \
-            or self.request.get('form.userId')
+        userId = self.userId
 
         editing_self = True
         # editing_self = (userId is not None) and (me.userId == userId)
@@ -85,15 +95,14 @@ class GroupEmailSettingsForm(GroupForm):
 
     @Lazy
     def userInfo(self):
-        userId = self.request.get('userId') \
-            or self.request.get('form.userId')
+        userId = self.userId
         if userId:
             user = self.context.acl_users.getUser(userId)
-            # --=mpj17=-- Ask me no questions…
+            # --=mpj17=-- Ask me no questions...
             interaction = zope.security.management.queryInteraction()
             if interaction is None:
                 zope.security.management.newInteraction()
-            # --=mpj17=-- …I tell you no lies.
+            # --=mpj17=-- ...I tell you no lies.
             if not zope.security.management.checkPermission(
                     "zope2.ManageProperties", user):
                 m = "Not authorized to manage the settings of user {0}."
