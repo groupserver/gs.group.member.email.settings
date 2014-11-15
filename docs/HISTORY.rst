@@ -1,6 +1,12 @@
 Changelog
 =========
 
+3.0.2 (2014-11-14)
+------------------
+
+* Dealing with people being logged out and viewing the *Change
+  group email settings* page
+
 3.0.1 (2014-10-10)
 ------------------
 
