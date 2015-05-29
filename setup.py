@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ############################################################################
 #
-# Copyright © 2014 OnlineGroups.net and Contributors.
+# Copyright © 2014, 2015 OnlineGroups.net and Contributors.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
@@ -56,20 +56,33 @@ setup(name=name,
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'zope.browserpage',
           'zope.cachedescriptors',
           'zope.component',
           'zope.formlib',
+          'zope.i18n',
+          'zope.i18nmessageid',
           'zope.interface',
           'zope.schema',
           'zope.security',
+          'zope.tal',
+          'zope.tales',
           'Zope2',
+          'gs.content.email.base',
+          'gs.content.email.layout',
           'gs.content.form.base',
+          'gs.core',
           'gs.group.base',
-          'gs.profile.email.base',
-          'Products.CustomUserFolder',
-          'Products.GSProfile',
-          'gs.profile.notify',
+          'gs.group.list.command',
           'gs.group.member.base',
+          'gs.group.member.email.base',
+          'gs.profile.email.base',
+          'gs.profile.notify',
+          'Products.CustomUserFolder',
+          'Products.GSAuditTrail',
+          'Products.GSGroup',
+          'Products.GSProfile',
+          'Products.XWFCore'
       ],
       entry_points="""
           # -*- Entry points: -*-
