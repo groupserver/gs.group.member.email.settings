@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ############################################################################
 #
-# Copyright © 2014 OnlineGroups.net and Contributors.
+# Copyright © 2014, 2015 OnlineGroups.net and Contributors.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
@@ -12,8 +12,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ############################################################################
-from __future__ import absolute_import, unicode_literals
-from urllib import quote
+from __future__ import absolute_import, unicode_literals, print_function
 from zope.cachedescriptors.property import Lazy
 from zope.component import createObject
 from gs.content.email.base import (GroupEmail, TextMixin)
@@ -35,9 +34,7 @@ class DigestOnHTML(GroupEmail):
               'Group          {url}\n  Me             {userUrl}\n'
         body = msg.format(group=self.groupInfo.name, url=self.groupInfo.url,
                           userUrl=uu)
-        m = 'mailto:{to}?Subject={subj}&body={body}'
-        retval = m.format(to=self.siteInfo.get_support_email(),
-                          subj=quote(subj), body=quote(body.encode(UTF8)))
+        retval = self.mailto(self.siteInfo.get_support_email(), subj, body)
         return retval
 
     @Lazy
@@ -49,8 +46,9 @@ class DigestOnHTML(GroupEmail):
     @Lazy
     def digestOff(self):
         subject = 'digest off'
-        r = 'mailto:{to}?Subject={subj}'
-        retval = r.format(to=self.listAddress, subj=subject)
+        b = 'Please set me to one email per post for {0}\n<{1}>'
+        body = b.format(self.groupInfo.name, self.groupInfo.url)
+        retval = self.mailto(self.listAddress, subject, body)
         return retval
 
 
@@ -76,7 +74,7 @@ class DigestOffHTML(DigestOnHTML):
     @Lazy
     def digestOn(self):
         subject = 'digest on'
-        r = 'mailto:{to}?Subject={subj}'
+        r = 'mailto:{to}?subject={subj}'
         retval = r.format(to=self.listAddress, subj=subject)
         return retval
 
@@ -88,9 +86,7 @@ class DigestOffHTML(DigestOnHTML):
               'Group          {url}\n  Me             {userUrl}\n'
         body = msg.format(group=self.groupInfo.name, url=self.groupInfo.url,
                           userUrl=uu)
-        m = 'mailto:{to}?Subject={subj}&body={body}'
-        retval = m.format(to=self.siteInfo.get_support_email(),
-                          subj=quote(subj), body=quote(body.encode(UTF8)))
+        retval = self.mailto(self.siteInfo.get_support_email(), subj, body)
         return retval
 
 
